@@ -22,12 +22,14 @@ var tex_enemy_ghost: Texture2D
 
 const VirtualPadScene = preload("res://scenes/ui/virtual_pad.tscn")
 const SaveMgrScript = preload("res://scripts/systems/save_manager.gd")
+const PopupScene = preload("res://scenes/ui/popup_display.tscn")
 
 var session: Node
 var _facing: Vector2i = Vector2i.DOWN  # プレイヤーの向き（最後の移動方向）
 var _is_animating: bool = false  # 移動アニメーション中
 var _vpad: Node = null
 var _tile_map: TileMapLayer = null
+var _popup: Node = null
 
 # スプライト
 var _player_sprite: Sprite2D
@@ -48,6 +50,7 @@ func _ready() -> void:
 
 	_setup_tile_map()
 	_setup_virtual_pad()
+	_setup_popup()
 	_create_player_sprite()
 
 	# セーブデータのロード or 新規ゲーム
@@ -91,6 +94,11 @@ func _process(_delta: float) -> void:
 		debug_label.text = "FPS:%d  Nodes:%d  Draw:%d" % [fps, nodes, draw]
 
 
+func _setup_popup() -> void:
+	_popup = PopupScene.instantiate()
+	add_child(_popup)
+
+
 func _load_textures() -> void:
 	tex_player_down = load("res://assets/sprites/player_down.png")
 	tex_player_up = load("res://assets/sprites/player_up.png")
@@ -104,6 +112,8 @@ func _load_textures() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if session == null or _is_animating:
+		return
+	if _popup and _popup.is_showing():
 		return
 
 	# Shift+方向: その場で方向転換（ターン消費なし）
@@ -182,14 +192,49 @@ func _do_interact() -> void:
 			_rebuild_map()
 			_update_entities_immediate()
 			_update_hud()
-		"chest_knowledge", "chest_item":
+		"chest_knowledge":
 			_rebuild_map()
 			_update_hud()
+			_show_knowledge_popup(result.get("knowledge_id", ""))
+		"chest_item":
+			_rebuild_map()
+			_update_hud()
+			_show_item_popup(result.get("item_id", ""))
 		"gimmick_resolved":
 			_rebuild_map()
 			_update_hud()
 		"gimmick_failed":
 			pass  # メッセージのみ（session.messageで通知済み）
+
+
+func _show_knowledge_popup(knowledge_id: String) -> void:
+	if _popup == null or knowledge_id == "":
+		return
+	var info: Dictionary = session.knowledge_system.get_info(knowledge_id)
+	if info.is_empty():
+		return
+	var skill_desc: String = ""
+	if info.has("skill_id") and info["skill_id"] != "":
+		var skill_info: Dictionary = session.combat_system.get_skill_info(info["skill_id"])
+		if not skill_info.is_empty():
+			skill_desc = skill_info["name"]
+	var field_desc: String = info.get("field_effect", "")
+	_popup.show_knowledge(info["name"], info["category"], skill_desc, field_desc)
+
+
+func _show_item_popup(item_id: String) -> void:
+	if _popup == null or item_id == "":
+		return
+	# アイテム名と説明（仮定義）
+	var item_names: Dictionary = {
+		"herb": "薬草",
+	}
+	var item_descs: Dictionary = {
+		"herb": "HPを10回復する",
+	}
+	var name_str: String = item_names.get(item_id, item_id)
+	var desc_str: String = item_descs.get(item_id, "")
+	_popup.show_item(name_str, desc_str)
 
 
 func _direction_name(dir: Vector2i) -> String:
