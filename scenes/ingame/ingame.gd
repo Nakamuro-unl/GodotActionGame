@@ -23,9 +23,12 @@ var tex_player: Texture2D
 var tex_enemy_normal: Texture2D
 var tex_enemy_ghost: Texture2D
 
+const VirtualPadScene = preload("res://scenes/ui/virtual_pad.tscn")
+
 var session: Node
 var _facing: Vector2i = Vector2i.DOWN  # プレイヤーの向き（最後の移動方向）
 var _is_animating: bool = false  # 移動アニメーション中
+var _vpad: Node = null
 
 # スプライトプール
 var _map_sprites: Array[Sprite2D] = []
@@ -48,11 +51,22 @@ func _ready() -> void:
 	var seed_val: int = randi()
 	session.start_new_game(seed_val)
 
+	_setup_virtual_pad()
 	_create_player_sprite()
 	_rebuild_map()
 	_update_entities_immediate()
 	_update_hud()
 	_add_message("ステージ1 - 石器時代 1F")
+
+
+func _setup_virtual_pad() -> void:
+	_vpad = VirtualPadScene.instantiate()
+	add_child(_vpad)
+	_vpad.direction_pressed.connect(_do_move)
+	_vpad.face_pressed.connect(_turn_facing)
+	_vpad.skill_pressed.connect(_do_skill)
+	_vpad.wait_pressed.connect(_do_wait)
+	_vpad.interact_pressed.connect(_do_interact)
 
 
 func _load_textures() -> void:
@@ -357,6 +371,18 @@ func _update_hud() -> void:
 			var name_str: String = info.get("name", sid)
 			parts.append("[%d]%s" % [i + 1, name_str])
 	slot_label.text = "  ".join(parts)
+
+	# バーチャルパッドの技名も更新
+	if _vpad:
+		var vpad_names: Array[String] = []
+		for i in p.skill_slots.size():
+			var sid = p.skill_slots[i]
+			if sid == null or sid == "":
+				vpad_names.append("---")
+			else:
+				var info: Dictionary = session.combat_system.get_skill_info(sid)
+				vpad_names.append(info.get("name", sid))
+		_vpad.update_skill_labels(vpad_names)
 
 
 # --- メッセージログ ---

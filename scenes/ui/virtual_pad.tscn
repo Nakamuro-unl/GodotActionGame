@@ -1,0 +1,145 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/virtual_pad.gd" id="1_vpad"]
+
+[node name="VirtualPad" type="CanvasLayer"]
+layer = 10
+script = ExtResource("1_vpad")
+
+[node name="DPad" type="Control" parent="."]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = -180.0
+offset_right = 176.0
+offset_bottom = -16.0
+
+[node name="Up" type="Button" parent="DPad"]
+offset_left = 48.0
+offset_top = 0.0
+offset_right = 112.0
+offset_bottom = 48.0
+text = "^"
+theme_override_font_sizes/font_size = 18
+
+[node name="Down" type="Button" parent="DPad"]
+offset_left = 48.0
+offset_top = 104.0
+offset_right = 112.0
+offset_bottom = 152.0
+text = "v"
+theme_override_font_sizes/font_size = 18
+
+[node name="Left" type="Button" parent="DPad"]
+offset_left = 0.0
+offset_top = 52.0
+offset_right = 48.0
+offset_bottom = 100.0
+text = "<"
+theme_override_font_sizes/font_size = 18
+
+[node name="Right" type="Button" parent="DPad"]
+offset_left = 112.0
+offset_top = 52.0
+offset_right = 160.0
+offset_bottom = 100.0
+text = ">"
+theme_override_font_sizes/font_size = 18
+
+[node name="ModeButton" type="Button" parent="."]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 56.0
+offset_top = -210.0
+offset_right = 136.0
+offset_bottom = -184.0
+text = "移動"
+theme_override_font_sizes/font_size = 12
+
+[node name="Skills" type="Control" parent="."]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -200.0
+offset_top = -180.0
+offset_right = -16.0
+offset_bottom = -60.0
+
+[node name="Skill1" type="Button" parent="Skills"]
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 56.0
+offset_bottom = 36.0
+text = "+1"
+theme_override_font_sizes/font_size = 11
+
+[node name="Skill2" type="Button" parent="Skills"]
+offset_left = 62.0
+offset_top = 0.0
+offset_right = 118.0
+offset_bottom = 36.0
+text = "-1"
+theme_override_font_sizes/font_size = 11
+
+[node name="Skill3" type="Button" parent="Skills"]
+offset_left = 124.0
+offset_top = 0.0
+offset_right = 180.0
+offset_bottom = 36.0
+text = "---"
+theme_override_font_sizes/font_size = 11
+
+[node name="Skill4" type="Button" parent="Skills"]
+offset_left = 0.0
+offset_top = 42.0
+offset_right = 56.0
+offset_bottom = 78.0
+text = "---"
+theme_override_font_sizes/font_size = 11
+
+[node name="Skill5" type="Button" parent="Skills"]
+offset_left = 62.0
+offset_top = 42.0
+offset_right = 118.0
+offset_bottom = 78.0
+text = "---"
+theme_override_font_sizes/font_size = 11
+
+[node name="Skill6" type="Button" parent="Skills"]
+offset_left = 124.0
+offset_top = 42.0
+offset_right = 180.0
+offset_bottom = 78.0
+text = "---"
+theme_override_font_sizes/font_size = 11
+
+[node name="Actions" type="Control" parent="."]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -200.0
+offset_top = -50.0
+offset_right = -16.0
+offset_bottom = -16.0
+
+[node name="WaitButton" type="Button" parent="Actions"]
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 86.0
+offset_bottom = 32.0
+text = "待機"
+theme_override_font_sizes/font_size = 12
+
+[node name="StairsButton" type="Button" parent="Actions"]
+offset_left = 94.0
+offset_top = 0.0
+offset_right = 180.0
+offset_bottom = 32.0
+text = "階段"
+theme_override_font_sizes/font_size = 12
