@@ -127,6 +127,11 @@ func decide_move(player_pos: Vector2i, grid: Array, occupied: Array[Vector2i]) -
 	if state == EnemyState.DEFEATED:
 		return
 
+	# 既にプレイヤーと隣接していたら移動しない（攻撃フェーズでダメージ）
+	if _is_adjacent_to(player_pos):
+		_turn_counter += 1
+		return
+
 	match ai_pattern:
 		AIPattern.CHASE:
 			_move_chase(player_pos, grid, occupied)
@@ -201,6 +206,11 @@ func _move_warp(grid: Array, occupied: Array[Vector2i]) -> void:
 		if grid[y][x] == MG.Tile.FLOOR and not pos in occupied:
 			grid_pos = pos
 			return
+
+
+func _is_adjacent_to(pos: Vector2i) -> bool:
+	var diff: Vector2i = grid_pos - pos
+	return (absi(diff.x) + absi(diff.y)) == 1
 
 
 func _get_direction_toward(target: Vector2i) -> Vector2i:
