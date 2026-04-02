@@ -252,11 +252,11 @@ func _update_entities() -> void:
 		else:
 			spr.texture = tex_enemy_normal
 
-		# 数値ラベル更新
+		# 数値ラベル更新（EntityLayer上で独立配置）
 		if _enemy_labels.has(enemy):
 			var lbl: Label = _enemy_labels[enemy]
 			lbl.text = str(enemy.value)
-			lbl.position = Vector2(-TILE_SIZE * 0.5, -TILE_SIZE * 1.2)
+			lbl.position = Vector2(e_pos.x * TILE_SIZE - 12, e_pos.y * TILE_SIZE - 14)
 			if enemy.value < 0:
 				lbl.add_theme_color_override("font_color", Color(0.7, 0.3, 0.9))
 			else:
@@ -273,13 +273,14 @@ func _create_enemy_sprite(enemy: Node) -> void:
 	$EntityLayer.add_child(spr)
 	_enemy_sprites[enemy] = spr
 
-	# 数値ラベル
+	# 数値ラベル（EntityLayerに直接追加。スプライトのscaleの影響を受けない）
 	var lbl: Label = Label.new()
 	lbl.text = str(enemy.value)
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	lbl.add_theme_font_size_override("font_size", 8)
-	lbl.position = Vector2(-TILE_SIZE * 0.5, -TILE_SIZE * 1.2)
-	spr.add_child(lbl)
+	lbl.add_theme_font_size_override("font_size", 10)
+	lbl.z_index = 20
+	lbl.size = Vector2(40, 16)
+	$EntityLayer.add_child(lbl)
 	_enemy_labels[enemy] = lbl
 
 
