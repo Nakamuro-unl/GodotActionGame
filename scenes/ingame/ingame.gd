@@ -155,12 +155,20 @@ func _do_wait() -> void:
 
 
 func _do_interact() -> void:
-	var stairs_pos: Vector2i = session.map_generator.get_stairs_position()
-	if session.player.grid_pos == stairs_pos:
-		session.interact_stairs()
-		_rebuild_map()
-		_update_entities_immediate()
-		_update_hud()
+	var result: Dictionary = session.interact(_facing)
+	match result["type"]:
+		"stairs":
+			_rebuild_map()
+			_update_entities_immediate()
+			_update_hud()
+		"chest_knowledge", "chest_item":
+			_rebuild_map()
+			_update_hud()
+		"gimmick_resolved":
+			_rebuild_map()
+			_update_hud()
+		"gimmick_failed":
+			pass  # メッセージのみ（session.messageで通知済み）
 
 
 func _direction_name(dir: Vector2i) -> String:

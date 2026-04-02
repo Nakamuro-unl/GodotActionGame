@@ -14,6 +14,7 @@ const TurnMgr = preload("res://scripts/systems/turn_manager.gd")
 const CombatSys = preload("res://scripts/systems/combat_system.gd")
 const ScoreSys = preload("res://scripts/systems/score_system.gd")
 const KnowledgeSys = preload("res://scripts/systems/knowledge_system.gd")
+const GimmickSys = preload("res://scripts/systems/gimmick_system.gd")
 const PlayerScript = preload("res://scripts/entities/player.gd")
 const EnemyScript = preload("res://scripts/entities/enemy.gd")
 
@@ -63,9 +64,11 @@ var turn_manager: Node
 var combat_system: Node
 var score_system: Node
 var knowledge_system: Node
+var gimmick_system: Node
 var player: Node
 var enemies: Array = []
 var grid: Array = []
+var chest_positions: Array[Vector2i] = []
 var current_stage: int = 1
 var current_floor: int = 1
 var seed_value: int = 0
@@ -91,11 +94,13 @@ func _init_systems() -> void:
 	combat_system = CombatSys.new()
 	score_system = ScoreSys.new()
 	knowledge_system = KnowledgeSys.new()
+	gimmick_system = GimmickSys.new()
 	add_child(map_generator)
 	add_child(turn_manager)
 	add_child(combat_system)
 	add_child(score_system)
 	add_child(knowledge_system)
+	add_child(gimmick_system)
 
 	turn_manager.enemy_phase_started.connect(_on_enemy_phase)
 	turn_manager.environment_phase_started.connect(_on_environment_phase)
@@ -118,6 +123,8 @@ func _generate_floor() -> void:
 	player.setup(grid, start_pos)
 
 	_spawn_enemies()
+	_place_chests()
+	_place_gimmicks()
 	floor_changed.emit(current_floor, current_stage)
 
 
@@ -144,6 +151,76 @@ func _spawn_enemies() -> void:
 		enemy.defeated.connect(_on_enemy_defeated.bind(enemy))
 		enemy.ghostified.connect(_on_enemy_ghostified)
 		enemies.append(enemy)
+
+
+## 宝箱配置テーブル: [min, max]
+const STAGE_CHEST_COUNT: Dictionary = {
+	1: Vector2i(2, 3),
+	2: Vector2i(2, 3),
+	3: Vector2i(1, 3),
+	4: Vector2i(1, 2),
+	5: Vector2i(1, 2),
+}
+
+
+func _place_chests() -> void:
+	chest_positions.clear()
+	var count_range: Vector2i = STAGE_CHEST_COUNT.get(current_stage, Vector2i(1, 2))
+	var count: int = _rng.randi_range(count_range.x, count_range.y)
+	var rooms: Array = map_generator.get_rooms()
+
+	for i in count:
+		var pos: Vector2i = _get_random_floor_pos(rooms)
+		if pos != Vector2i(1, 1):  # 有効な位置が見つかった場合
+			chest_positions.append(pos)
+			grid[pos.y][pos.x] = MapGen.Tile.CHEST
+
+
+func _place_gimmicks() -> void:
+	gimmick_system.clear_gimmicks()
+	var types: Array = GimmickSys.get_gimmick_types_for_stage(current_stage)
+	if types.is_empty():
+		return
+
+	var rooms: Array = map_generator.get_rooms()
+	# 各フロアに0-2個のギミックを配置
+	var count: int = _rng.randi_range(0, mini(2, types.size()))
+
+	for i in count:
+		var gtype: int = types[_rng.randi_range(0, types.size() - 1)]
+		var required: String = GimmickSys.GIMMICK_KNOWLEDGE.get(gtype, "")
+		if required == "":
+			continue
+
+		# 壁の隣接位置にギミックを配置（壁を特殊壁に変更）
+		var pos: Vector2i = _find_gimmick_wall_pos(rooms)
+		if pos != Vector2i.ZERO:
+			gimmick_system.place_gimmick(pos, gtype, required)
+
+
+func _find_gimmick_wall_pos(rooms: Array) -> Vector2i:
+	## 部屋の外壁に隣接する壁タイルを探す（ギミック壁として使う）
+	var directions: Array[Vector2i] = [Vector2i.UP, Vector2i.DOWN, Vector2i.LEFT, Vector2i.RIGHT]
+	for attempt in 30:
+		var room_idx: int = _rng.randi_range(0, rooms.size() - 1)
+		var room: Rect2i = rooms[room_idx]
+		# 部屋の辺からランダムに1点選ぶ
+		var side: int = _rng.randi_range(0, 3)
+		var wall_pos: Vector2i
+		match side:
+			0:  # 上辺の外
+				wall_pos = Vector2i(_rng.randi_range(room.position.x, room.position.x + room.size.x - 1), room.position.y - 1)
+			1:  # 下辺の外
+				wall_pos = Vector2i(_rng.randi_range(room.position.x, room.position.x + room.size.x - 1), room.position.y + room.size.y)
+			2:  # 左辺の外
+				wall_pos = Vector2i(room.position.x - 1, _rng.randi_range(room.position.y, room.position.y + room.size.y - 1))
+			3:  # 右辺の外
+				wall_pos = Vector2i(room.position.x + room.size.x, _rng.randi_range(room.position.y, room.position.y + room.size.y - 1))
+
+		if wall_pos.x > 0 and wall_pos.x < MapGen.GRID_WIDTH - 1 and wall_pos.y > 0 and wall_pos.y < MapGen.GRID_HEIGHT - 1:
+			if grid[wall_pos.y][wall_pos.x] == MapGen.Tile.WALL:
+				return wall_pos
+	return Vector2i.ZERO
 
 
 func _get_random_floor_pos(rooms: Array) -> Vector2i:
@@ -206,13 +283,35 @@ func try_use_skill(slot_index: int, direction: Vector2i) -> Dictionary:
 	return result
 
 
-func interact_stairs() -> void:
+## 「調べる」統合アクション。足元の階段/宝箱、向き方向のギミックを判定する。
+func interact(facing: Vector2i) -> Dictionary:
 	if _is_game_over:
-		return
-	var stairs_pos: Vector2i = map_generator.get_stairs_position()
-	if player.grid_pos != stairs_pos:
-		return
+		return {"type": "none"}
 
+	# 1. 足元が階段か
+	var stairs_pos: Vector2i = map_generator.get_stairs_position()
+	if player.grid_pos == stairs_pos:
+		_advance_floor()
+		return {"type": "stairs"}
+
+	# 2. 足元が宝箱か
+	if player.grid_pos in chest_positions:
+		return _open_chest_at(player.grid_pos)
+
+	# 3. 向き方向にギミックがあるか
+	var gimmick_pos: Vector2i = player.grid_pos + facing
+	if gimmick_system.has_gimmick_at(gimmick_pos):
+		return _try_resolve_gimmick(gimmick_pos)
+
+	return {"type": "none", "message": ""}
+
+
+## 後方互換: interact_stairs() は interact() 経由で呼ぶ
+func interact_stairs() -> void:
+	interact(Vector2i.ZERO)
+
+
+func _advance_floor() -> void:
 	score_system.register_floor_cleared()
 	current_floor += 1
 
@@ -224,17 +323,35 @@ func interact_stairs() -> void:
 	_generate_floor()
 
 
-func open_chest() -> void:
+func _open_chest_at(pos: Vector2i) -> Dictionary:
+	chest_positions.erase(pos)
+	grid[pos.y][pos.x] = MapGen.Tile.FLOOR
+
 	var knowledge_id: String = knowledge_system.get_random_unobtained(current_stage)
 	if knowledge_id != "":
 		knowledge_system.acquire(knowledge_id)
 		score_system.register_knowledge()
 		var info: Dictionary = knowledge_system.get_info(knowledge_id)
-		message.emit("「%s」を手に入れた!" % info["name"])
+		message.emit("宝箱から「%s」を手に入れた!" % info["name"])
+		return {"type": "chest_knowledge", "knowledge_id": knowledge_id, "name": info["name"]}
 	else:
-		# 全知識獲得済みの場合はアイテム（仮）
 		player.add_item("herb")
-		message.emit("薬草を手に入れた!")
+		message.emit("宝箱から薬草を手に入れた!")
+		return {"type": "chest_item", "item_id": "herb"}
+
+
+func _try_resolve_gimmick(pos: Vector2i) -> Dictionary:
+	var result: Dictionary = gimmick_system.try_resolve(pos, knowledge_system, grid)
+	if result["success"]:
+		message.emit(result["message"])
+		return {"type": "gimmick_resolved", "message": result["message"]}
+	else:
+		message.emit(result["message"])
+		return {"type": "gimmick_failed", "message": result["message"]}
+
+
+func open_chest() -> void:
+	_open_chest_at(player.grid_pos)
 
 
 # --- 敵フェーズ ---
