@@ -296,9 +296,10 @@ func _grid_to_world(grid_pos: Vector2i) -> Vector2:
 	return Vector2(grid_pos.x * TILE_SIZE + TILE_SIZE * 0.5, grid_pos.y * TILE_SIZE + TILE_SIZE * 0.5)
 
 
-## アトラスのタイル配置: x座標 = Tile enum値
-## WALL=0, FLOOR=1, CORRIDOR=2, STAIRS=3, CHEST=4, TRAP=5
+## アトラスのタイル配置（x座標がインデックス）
+## 0-5: マップ, 6-12: ギミック, 13-30: アイテム, 31-40: 数学記号
 const ATLAS_TILE_SIZE: int = 128
+const ATLAS_TILE_COUNT: int = 41
 const TILESET_SOURCE_ID: int = 0
 
 func _setup_tile_map() -> void:
@@ -311,8 +312,7 @@ func _setup_tile_map() -> void:
 	source.texture = atlas_tex
 	source.texture_region_size = Vector2i(ATLAS_TILE_SIZE, ATLAS_TILE_SIZE)
 
-	# 6タイル分のアトラス座標を作成
-	for i in 6:
+	for i in ATLAS_TILE_COUNT:
 		source.create_tile(Vector2i(i, 0))
 
 	tileset.add_source(source, TILESET_SOURCE_ID)
