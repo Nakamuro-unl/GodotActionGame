@@ -316,11 +316,13 @@ func _advance_floor() -> void:
 	current_floor += 1
 
 	if current_floor > TOTAL_FLOORS:
+		_delete_save()
 		game_clear.emit()
 		return
 
 	current_stage = ((current_floor - 1) / FLOORS_PER_STAGE) + 1
 	_generate_floor()
+	_auto_save()
 
 
 func _open_chest_at(pos: Vector2i) -> Dictionary:
@@ -390,6 +392,7 @@ func _on_hp_regen() -> void:
 
 func _on_player_dead() -> void:
 	_is_game_over = true
+	_delete_save()
 	game_over.emit()
 
 
@@ -421,3 +424,20 @@ func _get_enemy_at(pos: Vector2i) -> Node:
 func _is_adjacent(a: Vector2i, b: Vector2i) -> bool:
 	var diff: Vector2i = a - b
 	return (absi(diff.x) + absi(diff.y)) == 1
+
+
+# --- セーブ ---
+
+const SaveMgr = preload("res://scripts/systems/save_manager.gd")
+
+func _auto_save() -> void:
+	var sm: Node = SaveMgr.new()
+	sm.save_game(self)
+	sm.free()
+	message.emit("セーブしました")
+
+
+func _delete_save() -> void:
+	var sm: Node = SaveMgr.new()
+	sm.delete_save()
+	sm.free()

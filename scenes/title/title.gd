@@ -4,12 +4,17 @@ extends Control
 ## メニュー選択で各画面に遷移する。
 
 const GMS = preload("res://scripts/autoload/game_manager.gd")
+const SaveMgr = preload("res://scripts/systems/save_manager.gd")
 
-@onready var menu_items: Array[String] = ["はじめから", "ランキング", "あそびかた", "せってい"]
+@onready var menu_items: Array[String] = ["はじめから", "つづきから", "ランキング", "あそびかた", "せってい"]
 var selected_index: int = 0
+var _has_save: bool = false
 
 
 func _ready() -> void:
+	var sm: Node = SaveMgr.new()
+	_has_save = sm.has_save_data()
+	sm.free()
 	_update_menu_display()
 
 
@@ -29,13 +34,18 @@ func _on_menu_selected() -> void:
 	if gm == null:
 		return
 	match selected_index:
-		0:
+		0:  # はじめから
+			gm.should_load_save = false
 			gm.change_state(GMS.State.INGAME)
-		1:
+		1:  # つづきから
+			if _has_save:
+				gm.should_load_save = true
+				gm.change_state(GMS.State.INGAME)
+		2:  # ランキング
 			gm.change_state(GMS.State.RANKING)
-		2:
+		3:  # あそびかた
 			gm.change_state(GMS.State.HOWTOPLAY)
-		3:
+		4:  # せってい
 			gm.change_state(GMS.State.SETTINGS)
 
 
@@ -45,8 +55,12 @@ func _update_menu_display() -> void:
 		return
 	var text := "MATH MAGE\n\n"
 	for i in menu_items.size():
+		var item_text: String = menu_items[i]
+		# つづきからがセーブなしならグレー表示
+		if i == 1 and not _has_save:
+			item_text += " (データなし)"
 		if i == selected_index:
-			text += "> %s\n" % menu_items[i]
+			text += "> %s\n" % item_text
 		else:
-			text += "  %s\n" % menu_items[i]
+			text += "  %s\n" % item_text
 	label.text = text

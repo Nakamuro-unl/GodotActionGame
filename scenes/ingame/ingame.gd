@@ -21,6 +21,7 @@ var tex_enemy_normal: Texture2D
 var tex_enemy_ghost: Texture2D
 
 const VirtualPadScene = preload("res://scenes/ui/virtual_pad.tscn")
+const SaveMgrScript = preload("res://scripts/systems/save_manager.gd")
 
 var session: Node
 var _facing: Vector2i = Vector2i.DOWN  # プレイヤーの向き（最後の移動方向）
@@ -45,16 +46,30 @@ func _ready() -> void:
 	session.floor_changed.connect(_on_floor_changed)
 	session.message.connect(_on_message)
 
-	var seed_val: int = randi()
-	session.start_new_game(seed_val)
-
 	_setup_tile_map()
 	_setup_virtual_pad()
 	_create_player_sprite()
+
+	# セーブデータのロード or 新規ゲーム
+	var gm: Node = get_node_or_null("/root/GameManager")
+	var loaded: bool = false
+	if gm and gm.should_load_save:
+		var sm: Node = SaveMgrScript.new()
+		loaded = sm.load_game(session)
+		sm.free()
+		gm.should_load_save = false
+
+	if not loaded:
+		var seed_val: int = randi()
+		session.start_new_game(seed_val)
+
 	_rebuild_map()
 	_update_entities_immediate()
 	_update_hud()
-	_add_message("ステージ1 - 石器時代 1F")
+	if loaded:
+		_add_message("セーブデータをロードしました (%dF)" % session.current_floor)
+	else:
+		_add_message("ステージ1 - 石器時代 1F")
 
 
 func _setup_virtual_pad() -> void:
