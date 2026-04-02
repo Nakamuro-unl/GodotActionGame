@@ -10,6 +10,7 @@ const EnemyScript = preload("res://scripts/entities/enemy.gd")
 
 const TILE_SIZE: int = 16
 const SPRITE_SCALE: float = 16.0 / 128.0  # 0.125
+const MOVE_DURATION: float = 0.12  # 移動補間の秒数
 
 # テクスチャ
 var tex_wall: Texture2D
@@ -23,16 +24,14 @@ var tex_enemy_normal: Texture2D
 var tex_enemy_ghost: Texture2D
 
 var session: Node
-var _awaiting_skill_direction: bool = false
-var _skill_slot_index: int = -1
+var _facing: Vector2i = Vector2i.DOWN  # プレイヤーの向き（最後の移動方向）
+var _is_animating: bool = false  # 移動アニメーション中
 
 # スプライトプール
 var _map_sprites: Array[Sprite2D] = []
 var _player_sprite: Sprite2D
 var _enemy_sprites: Dictionary = {}  # enemy Node -> Sprite2D
 var _enemy_labels: Dictionary = {}   # enemy Node -> Label
-var _view_w: int = 40
-var _view_h: int = 30
 
 
 func _ready() -> void:
@@ -51,7 +50,7 @@ func _ready() -> void:
 
 	_create_player_sprite()
 	_rebuild_map()
-	_update_entities()
+	_update_entities_immediate()
 	_update_hud()
 	_add_message("ステージ1 - 石器時代 1F")
 
@@ -71,11 +70,7 @@ func _load_textures() -> void:
 # --- 入力処理 ---
 
 func _unhandled_input(event: InputEvent) -> void:
-	if session == null:
-		return
-
-	if _awaiting_skill_direction:
-		_handle_skill_direction(event)
+	if session == null or _is_animating:
 		return
 
 	if event.is_action_pressed("ui_up"):
@@ -89,7 +84,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event is InputEventKey and event.pressed:
 		var key: int = event.keycode
 		if key >= KEY_1 and key <= KEY_6:
-			_start_skill(key - KEY_1)
+			_do_skill(key - KEY_1)
 		elif key == KEY_SPACE or key == KEY_PERIOD:
 			_do_wait()
 		elif key == KEY_ENTER or key == KEY_KP_ENTER:
@@ -97,14 +92,31 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _do_move(direction: Vector2i) -> void:
+	_facing = direction
 	if session.try_player_move(direction):
-		_after_turn()
+		_after_turn_animated()
+
+
+func _do_skill(slot_index: int) -> void:
+	if slot_index >= session.player.skill_slots.size():
+		return
+	var skill_id = session.player.skill_slots[slot_index]
+	if skill_id == null or skill_id == "":
+		_add_message("技がセットされていない")
+		return
+	var result: Dictionary = session.try_use_skill(slot_index, _facing)
+	if result["success"]:
+		var info: Dictionary = session.combat_system.get_skill_info(skill_id)
+		_add_message("%s を使った! %d -> %d" % [info["name"], result["old_value"], result["new_value"]])
+		_after_turn_animated()
+	else:
+		_add_message("正面に敵がいない（向き: %s）" % _direction_name(_facing))
 
 
 func _do_wait() -> void:
 	session.score_system.register_turn()
 	session.turn_manager.execute_player_action()
-	_after_turn()
+	_after_turn_animated()
 
 
 func _do_interact() -> void:
@@ -112,62 +124,68 @@ func _do_interact() -> void:
 	if session.player.grid_pos == stairs_pos:
 		session.interact_stairs()
 		_rebuild_map()
-		_update_entities()
+		_update_entities_immediate()
 		_update_hud()
 
 
-func _start_skill(slot_index: int) -> void:
-	if slot_index >= session.player.skill_slots.size():
-		return
-	var skill_id = session.player.skill_slots[slot_index]
-	if skill_id == null or skill_id == "":
-		return
-	_awaiting_skill_direction = true
-	_skill_slot_index = slot_index
-	_add_message("方向を選択... (矢印キー / Escでキャンセル)")
+func _direction_name(dir: Vector2i) -> String:
+	if dir == Vector2i.UP: return "上"
+	if dir == Vector2i.DOWN: return "下"
+	if dir == Vector2i.LEFT: return "左"
+	if dir == Vector2i.RIGHT: return "右"
+	return "?"
 
 
-func _handle_skill_direction(event: InputEvent) -> void:
-	var direction: Vector2i = Vector2i.ZERO
-	if event.is_action_pressed("ui_up"):
-		direction = Vector2i.UP
-	elif event.is_action_pressed("ui_down"):
-		direction = Vector2i.DOWN
-	elif event.is_action_pressed("ui_left"):
-		direction = Vector2i.LEFT
-	elif event.is_action_pressed("ui_right"):
-		direction = Vector2i.RIGHT
-	elif event.is_action_pressed("ui_cancel"):
-		_awaiting_skill_direction = false
-		_add_message("キャンセル")
-		return
-	else:
-		return
+# --- ターン後の更新（アニメーション付き） ---
 
-	_awaiting_skill_direction = false
-	var result: Dictionary = session.try_use_skill(_skill_slot_index, direction)
-	if result["success"]:
-		var info: Dictionary = session.combat_system.get_skill_info(session.player.skill_slots[_skill_slot_index])
-		_add_message("%s を使った! %d -> %d" % [info["name"], result["old_value"], result["new_value"]])
-		_after_turn()
-	else:
-		_add_message("そこに敵はいない")
-
-
-func _after_turn() -> void:
+func _after_turn_animated() -> void:
 	session.enemies = session.enemies.filter(
 		func(e: Node) -> bool: return e.state != EnemyScript.EnemyState.DEFEATED
 	)
-	_update_entities()
+	_cleanup_dead_sprites()
+	_ensure_enemy_sprites()
 	_update_hud()
-	_update_camera()
+
+	# アニメーション開始
+	_is_animating = true
+	var tween: Tween = create_tween()
+	tween.set_parallel(true)
+
+	# プレイヤーの移動補間
+	var p_target: Vector2 = _grid_to_world(session.player.grid_pos)
+	tween.tween_property(_player_sprite, "position", p_target, MOVE_DURATION).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+
+	# カメラの移動補間
+	tween.tween_property($Camera2D, "position", p_target, MOVE_DURATION).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+
+	# 敵の移動補間
+	for enemy in session.enemies:
+		if enemy.state == EnemyScript.EnemyState.DEFEATED:
+			continue
+		if _enemy_sprites.has(enemy):
+			var spr: Sprite2D = _enemy_sprites[enemy]
+			var e_target: Vector2 = _grid_to_world(enemy.grid_pos)
+			tween.tween_property(spr, "position", e_target, MOVE_DURATION).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+
+	tween.set_parallel(false)
+	tween.tween_callback(_on_animation_done)
+
+
+func _on_animation_done() -> void:
+	_is_animating = false
+	_update_enemy_visuals()
+
+
+# --- 座標変換 ---
+
+func _grid_to_world(grid_pos: Vector2i) -> Vector2:
+	return Vector2(grid_pos.x * TILE_SIZE + TILE_SIZE * 0.5, grid_pos.y * TILE_SIZE + TILE_SIZE * 0.5)
 
 
 # --- マップ描画 ---
 
 func _rebuild_map() -> void:
 	var map_layer: Node2D = $MapLayer
-	# 既存スプライトをクリア
 	for s in _map_sprites:
 		if is_instance_valid(s):
 			s.queue_free()
@@ -183,7 +201,7 @@ func _rebuild_map() -> void:
 			var spr: Sprite2D = Sprite2D.new()
 			spr.texture = tex
 			spr.scale = Vector2(SPRITE_SCALE, SPRITE_SCALE)
-			spr.position = Vector2(x * TILE_SIZE + TILE_SIZE * 0.5, y * TILE_SIZE + TILE_SIZE * 0.5)
+			spr.position = _grid_to_world(Vector2i(x, y))
 			map_layer.add_child(spr)
 			_map_sprites.append(spr)
 
@@ -215,16 +233,22 @@ func _create_player_sprite() -> void:
 	$EntityLayer.add_child(_player_sprite)
 
 
-func _update_entities() -> void:
-	# プレイヤー
+func _update_entities_immediate() -> void:
+	## フロア遷移時など、アニメーションなしで全エンティティを即座に配置
 	var p_pos: Vector2i = session.player.grid_pos
-	_player_sprite.position = Vector2(p_pos.x * TILE_SIZE + TILE_SIZE * 0.5, p_pos.y * TILE_SIZE + TILE_SIZE * 0.5)
+	_player_sprite.position = _grid_to_world(p_pos)
+	$Camera2D.position = _grid_to_world(p_pos)
 
-	# 敵: 不要なスプライトを削除
-	var active_enemies: Array = session.enemies
+	_cleanup_dead_sprites()
+	_ensure_enemy_sprites()
+	_update_enemy_visuals()
+
+
+func _cleanup_dead_sprites() -> void:
+	var active: Array = session.enemies
 	var to_remove: Array = []
 	for e in _enemy_sprites:
-		if not is_instance_valid(e) or e.state == EnemyScript.EnemyState.DEFEATED or not (e in active_enemies):
+		if not is_instance_valid(e) or e.state == EnemyScript.EnemyState.DEFEATED or not (e in active):
 			to_remove.append(e)
 	for e in to_remove:
 		if _enemy_sprites.has(e) and is_instance_valid(_enemy_sprites[e]):
@@ -234,25 +258,31 @@ func _update_entities() -> void:
 			_enemy_labels[e].queue_free()
 		_enemy_labels.erase(e)
 
-	# 敵: 新規追加・位置更新
-	for enemy in active_enemies:
+
+func _ensure_enemy_sprites() -> void:
+	for enemy in session.enemies:
 		if enemy.state == EnemyScript.EnemyState.DEFEATED:
 			continue
-
 		if not _enemy_sprites.has(enemy):
 			_create_enemy_sprite(enemy)
 
+
+func _update_enemy_visuals() -> void:
+	for enemy in session.enemies:
+		if enemy.state == EnemyScript.EnemyState.DEFEATED:
+			continue
+		if not _enemy_sprites.has(enemy):
+			continue
+
 		var spr: Sprite2D = _enemy_sprites[enemy]
 		var e_pos: Vector2i = enemy.grid_pos
-		spr.position = Vector2(e_pos.x * TILE_SIZE + TILE_SIZE * 0.5, e_pos.y * TILE_SIZE + TILE_SIZE * 0.5)
+		spr.position = _grid_to_world(e_pos)
 
-		# テクスチャ切り替え
 		if enemy.state == EnemyScript.EnemyState.GHOST:
 			spr.texture = tex_enemy_ghost
 		else:
 			spr.texture = tex_enemy_normal
 
-		# 数値ラベル更新（EntityLayer上で独立配置）
 		if _enemy_labels.has(enemy):
 			var lbl: Label = _enemy_labels[enemy]
 			lbl.text = str(enemy.value)
@@ -261,8 +291,6 @@ func _update_entities() -> void:
 				lbl.add_theme_color_override("font_color", Color(0.7, 0.3, 0.9))
 			else:
 				lbl.add_theme_color_override("font_color", Color.WHITE)
-
-	_update_camera()
 
 
 func _create_enemy_sprite(enemy: Node) -> void:
@@ -273,7 +301,6 @@ func _create_enemy_sprite(enemy: Node) -> void:
 	$EntityLayer.add_child(spr)
 	_enemy_sprites[enemy] = spr
 
-	# 数値ラベル（EntityLayerに直接追加。スプライトのscaleの影響を受けない）
 	var lbl: Label = Label.new()
 	lbl.text = str(enemy.value)
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -284,13 +311,6 @@ func _create_enemy_sprite(enemy: Node) -> void:
 	_enemy_labels[enemy] = lbl
 
 
-# --- カメラ ---
-
-func _update_camera() -> void:
-	var p_pos: Vector2i = session.player.grid_pos
-	$Camera2D.position = Vector2(p_pos.x * TILE_SIZE + TILE_SIZE * 0.5, p_pos.y * TILE_SIZE + TILE_SIZE * 0.5)
-
-
 # --- HUD ---
 
 func _update_hud() -> void:
@@ -299,9 +319,10 @@ func _update_hud() -> void:
 	var combo_text: String = ""
 	if session.score_system.combo_count > 0:
 		combo_text = "  Combo: %d" % session.score_system.combo_count
-	hud.text = "HP:%d/%d  MP:%d/%d  Lv:%d  F:%dF  Turn:%d%s" % [
+	var facing_text: String = _direction_name(_facing)
+	hud.text = "HP:%d/%d  MP:%d/%d  Lv:%d  F:%dF  Turn:%d  [%s]%s" % [
 		p.hp, p.max_hp, p.mp, p.max_mp, p.level,
-		session.current_floor, session.turn_manager.turn_count, combo_text
+		session.current_floor, session.turn_manager.turn_count, facing_text, combo_text
 	]
 
 	var slot_label: Label = $UILayer/SkillSlots
