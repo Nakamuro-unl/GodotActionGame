@@ -19,7 +19,10 @@ var tex_corridor: Texture2D
 var tex_stairs: Texture2D
 var tex_chest: Texture2D
 var tex_trap: Texture2D
-var tex_player: Texture2D
+var tex_player_down: Texture2D
+var tex_player_up: Texture2D
+var tex_player_left: Texture2D
+var tex_player_right: Texture2D
 var tex_enemy_normal: Texture2D
 var tex_enemy_ghost: Texture2D
 
@@ -76,7 +79,10 @@ func _load_textures() -> void:
 	tex_stairs = load("res://assets/sprites/stairs.png")
 	tex_chest = load("res://assets/sprites/chest.png")
 	tex_trap = load("res://assets/sprites/trap.png")
-	tex_player = load("res://assets/sprites/player.png")
+	tex_player_down = load("res://assets/sprites/player_down.png")
+	tex_player_up = load("res://assets/sprites/player_up.png")
+	tex_player_left = load("res://assets/sprites/player_left.png")
+	tex_player_right = load("res://assets/sprites/player_right.png")
 	tex_enemy_normal = load("res://assets/sprites/enemy_normal.png")
 	tex_enemy_ghost = load("res://assets/sprites/enemy_ghost.png")
 
@@ -122,12 +128,14 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _turn_facing(direction: Vector2i) -> void:
 	_facing = direction
+	_update_player_facing()
 	_update_hud()
 	_add_message("向きを変えた [%s]" % _direction_name(direction))
 
 
 func _do_move(direction: Vector2i) -> void:
 	_facing = direction
+	_update_player_facing()
 	if session.try_player_move(direction):
 		_after_turn_animated()
 
@@ -270,10 +278,22 @@ func _tile_to_texture(tile: int) -> Texture2D:
 
 func _create_player_sprite() -> void:
 	_player_sprite = Sprite2D.new()
-	_player_sprite.texture = tex_player
+	_player_sprite.texture = tex_player_down
 	_player_sprite.scale = Vector2(SPRITE_SCALE, SPRITE_SCALE)
 	_player_sprite.z_index = 10
 	$EntityLayer.add_child(_player_sprite)
+
+
+func _update_player_facing() -> void:
+	match _facing:
+		Vector2i.UP:
+			_player_sprite.texture = tex_player_up
+		Vector2i.DOWN:
+			_player_sprite.texture = tex_player_down
+		Vector2i.LEFT:
+			_player_sprite.texture = tex_player_left
+		Vector2i.RIGHT:
+			_player_sprite.texture = tex_player_right
 
 
 func _update_entities_immediate() -> void:
