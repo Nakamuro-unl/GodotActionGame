@@ -13,12 +13,6 @@ const SPRITE_SCALE: float = 16.0 / 128.0  # 0.125
 const MOVE_DURATION: float = 0.12  # 移動補間の秒数
 
 # テクスチャ
-var tex_wall: Texture2D
-var tex_floor: Texture2D
-var tex_corridor: Texture2D
-var tex_stairs: Texture2D
-var tex_chest: Texture2D
-var tex_trap: Texture2D
 var tex_player_down: Texture2D
 var tex_player_up: Texture2D
 var tex_player_left: Texture2D
@@ -32,9 +26,9 @@ var session: Node
 var _facing: Vector2i = Vector2i.DOWN  # プレイヤーの向き（最後の移動方向）
 var _is_animating: bool = false  # 移動アニメーション中
 var _vpad: Node = null
+var _tile_map: TileMapLayer = null
 
-# スプライトプール
-var _map_sprites: Array[Sprite2D] = []
+# スプライト
 var _player_sprite: Sprite2D
 var _enemy_sprites: Dictionary = {}  # enemy Node -> Sprite2D
 var _enemy_labels: Dictionary = {}   # enemy Node -> Label
@@ -54,6 +48,7 @@ func _ready() -> void:
 	var seed_val: int = randi()
 	session.start_new_game(seed_val)
 
+	_setup_tile_map()
 	_setup_virtual_pad()
 	_create_player_sprite()
 	_rebuild_map()
@@ -82,12 +77,6 @@ func _process(_delta: float) -> void:
 
 
 func _load_textures() -> void:
-	tex_wall = load("res://assets/sprites/wall.png")
-	tex_floor = load("res://assets/sprites/floor.png")
-	tex_corridor = load("res://assets/sprites/corridor.png")
-	tex_stairs = load("res://assets/sprites/stairs.png")
-	tex_chest = load("res://assets/sprites/chest.png")
-	tex_trap = load("res://assets/sprites/trap.png")
 	tex_player_down = load("res://assets/sprites/player_down.png")
 	tex_player_up = load("res://assets/sprites/player_up.png")
 	tex_player_left = load("res://assets/sprites/player_left.png")
@@ -247,45 +236,57 @@ func _grid_to_world(grid_pos: Vector2i) -> Vector2:
 	return Vector2(grid_pos.x * TILE_SIZE + TILE_SIZE * 0.5, grid_pos.y * TILE_SIZE + TILE_SIZE * 0.5)
 
 
+## アトラスのタイル配置: x座標 = Tile enum値
+## WALL=0, FLOOR=1, CORRIDOR=2, STAIRS=3, CHEST=4, TRAP=5
+const ATLAS_TILE_SIZE: int = 128
+const TILESET_SOURCE_ID: int = 0
+
+func _setup_tile_map() -> void:
+	var atlas_tex: Texture2D = load("res://assets/sprites/tileset_atlas.png")
+
+	var tileset: TileSet = TileSet.new()
+	tileset.tile_size = Vector2i(ATLAS_TILE_SIZE, ATLAS_TILE_SIZE)
+
+	var source: TileSetAtlasSource = TileSetAtlasSource.new()
+	source.texture = atlas_tex
+	source.texture_region_size = Vector2i(ATLAS_TILE_SIZE, ATLAS_TILE_SIZE)
+
+	# 6タイル分のアトラス座標を作成
+	for i in 6:
+		source.create_tile(Vector2i(i, 0))
+
+	tileset.add_source(source, TILESET_SOURCE_ID)
+
+	_tile_map = TileMapLayer.new()
+	_tile_map.tile_set = tileset
+	_tile_map.scale = Vector2(SPRITE_SCALE, SPRITE_SCALE)  # 128 -> 16px
+	$MapLayer.add_child(_tile_map)
+
+
 # --- マップ描画 ---
 
 func _rebuild_map() -> void:
-	var map_layer: Node2D = $MapLayer
-	for s in _map_sprites:
-		if is_instance_valid(s):
-			s.queue_free()
-	_map_sprites.clear()
+	_tile_map.clear()
 
 	var g: Array = session.grid
 	for y in MapGen.GRID_HEIGHT:
 		for x in MapGen.GRID_WIDTH:
 			var tile: int = g[y][x]
-			var tex: Texture2D = _tile_to_texture(tile)
-			if tex == null:
+			var atlas_x: int = _tile_to_atlas_x(tile)
+			if atlas_x < 0:
 				continue
-			var spr: Sprite2D = Sprite2D.new()
-			spr.texture = tex
-			spr.scale = Vector2(SPRITE_SCALE, SPRITE_SCALE)
-			spr.position = _grid_to_world(Vector2i(x, y))
-			map_layer.add_child(spr)
-			_map_sprites.append(spr)
+			_tile_map.set_cell(Vector2i(x, y), TILESET_SOURCE_ID, Vector2i(atlas_x, 0))
 
 
-func _tile_to_texture(tile: int) -> Texture2D:
+func _tile_to_atlas_x(tile: int) -> int:
 	match tile:
-		MapGen.Tile.WALL:
-			return tex_wall
-		MapGen.Tile.FLOOR:
-			return tex_floor
-		MapGen.Tile.CORRIDOR:
-			return tex_corridor
-		MapGen.Tile.STAIRS:
-			return tex_stairs
-		MapGen.Tile.CHEST:
-			return tex_chest
-		MapGen.Tile.TRAP:
-			return tex_trap
-	return null
+		MapGen.Tile.WALL: return 0
+		MapGen.Tile.FLOOR: return 1
+		MapGen.Tile.CORRIDOR: return 2
+		MapGen.Tile.STAIRS: return 3
+		MapGen.Tile.CHEST: return 4
+		MapGen.Tile.TRAP: return 5
+	return -1
 
 
 # --- エンティティ描画 ---
