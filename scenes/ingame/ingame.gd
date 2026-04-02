@@ -72,6 +72,15 @@ func _setup_virtual_pad() -> void:
 	_vpad.interact_pressed.connect(_do_interact)
 
 
+func _process(_delta: float) -> void:
+	var debug_label: Label = $UILayer/DebugInfo
+	if debug_label:
+		var fps: int = int(Performance.get_monitor(Performance.TIME_FPS))
+		var nodes: int = int(Performance.get_monitor(Performance.OBJECT_NODE_COUNT))
+		var draw: int = int(Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME))
+		debug_label.text = "FPS:%d  Nodes:%d  Draw:%d" % [fps, nodes, draw]
+
+
 func _load_textures() -> void:
 	tex_wall = load("res://assets/sprites/wall.png")
 	tex_floor = load("res://assets/sprites/floor.png")
