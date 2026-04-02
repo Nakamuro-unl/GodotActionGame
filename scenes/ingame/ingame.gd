@@ -209,14 +209,19 @@ func _after_turn_animated() -> void:
 	# カメラの移動補間
 	tween.tween_property($Camera2D, "position", p_target, MOVE_DURATION).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
 
-	# 敵の移動補間
+	# 敵の移動補間（スプライト + ラベル）
 	for enemy in session.enemies:
 		if enemy.state == EnemyScript.EnemyState.DEFEATED:
 			continue
+		var e_target: Vector2 = _grid_to_world(enemy.grid_pos)
+		var lbl_target: Vector2 = Vector2(enemy.grid_pos.x * TILE_SIZE - 12, enemy.grid_pos.y * TILE_SIZE - 14)
 		if _enemy_sprites.has(enemy):
 			var spr: Sprite2D = _enemy_sprites[enemy]
-			var e_target: Vector2 = _grid_to_world(enemy.grid_pos)
 			tween.tween_property(spr, "position", e_target, MOVE_DURATION).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+		if _enemy_labels.has(enemy):
+			var lbl: Label = _enemy_labels[enemy]
+			lbl.text = str(enemy.value)
+			tween.tween_property(lbl, "position", lbl_target, MOVE_DURATION).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
 
 	tween.set_parallel(false)
 	tween.tween_callback(_on_animation_done)
