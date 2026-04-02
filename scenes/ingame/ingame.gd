@@ -73,6 +73,21 @@ func _unhandled_input(event: InputEvent) -> void:
 	if session == null or _is_animating:
 		return
 
+	# Shift+方向: その場で方向転換（ターン消費なし）
+	if event is InputEventKey and event.pressed and event.shift_pressed:
+		if event.keycode == KEY_UP or event.keycode == KEY_W:
+			_turn_facing(Vector2i.UP)
+			return
+		elif event.keycode == KEY_DOWN or event.keycode == KEY_S:
+			_turn_facing(Vector2i.DOWN)
+			return
+		elif event.keycode == KEY_LEFT or event.keycode == KEY_A:
+			_turn_facing(Vector2i.LEFT)
+			return
+		elif event.keycode == KEY_RIGHT or event.keycode == KEY_D:
+			_turn_facing(Vector2i.RIGHT)
+			return
+
 	if event.is_action_pressed("ui_up"):
 		_do_move(Vector2i.UP)
 	elif event.is_action_pressed("ui_down"):
@@ -89,6 +104,12 @@ func _unhandled_input(event: InputEvent) -> void:
 			_do_wait()
 		elif key == KEY_ENTER or key == KEY_KP_ENTER:
 			_do_interact()
+
+
+func _turn_facing(direction: Vector2i) -> void:
+	_facing = direction
+	_update_hud()
+	_add_message("向きを変えた [%s]" % _direction_name(direction))
 
 
 func _do_move(direction: Vector2i) -> void:
