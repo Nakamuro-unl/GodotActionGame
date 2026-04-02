@@ -87,9 +87,10 @@ func test_invalid_transition_result_to_ingame() -> void:
 
 # state_changed シグナルが発火すること
 func test_state_changed_signal_emitted() -> void:
-	var signal_collector := monitor_signals(_manager)
+	var received: Array = []
+	_manager.state_changed.connect(func(old_s: int, new_s: int) -> void: received.append([old_s, new_s]))
 	_manager.change_state(GMS.State.INGAME)
-	await assert_signal(signal_collector).is_emitted("state_changed", [GMS.State.TITLE, GMS.State.INGAME])
+	assert_array(received).contains_exactly([[GMS.State.TITLE, GMS.State.INGAME]])
 
 
 # メインフロー全体: TITLE → INGAME → RESULT → TITLE
