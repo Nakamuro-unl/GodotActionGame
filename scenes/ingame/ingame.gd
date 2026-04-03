@@ -296,9 +296,10 @@ func _grid_to_world(grid_pos: Vector2i) -> Vector2:
 	return Vector2(grid_pos.x * TILE_SIZE + TILE_SIZE * 0.5, grid_pos.y * TILE_SIZE + TILE_SIZE * 0.5)
 
 
-## アトラスのタイル配置（x座標がインデックス）
+## アトラス: 1024x1024, 8x8グリッド(128px/tile), 41タイル使用
 ## 0-5: マップ, 6-12: ギミック, 13-30: アイテム, 31-40: 数学記号
 const ATLAS_TILE_SIZE: int = 128
+const ATLAS_COLS: int = 8
 const ATLAS_TILE_COUNT: int = 41
 const TILESET_SOURCE_ID: int = 0
 
@@ -313,7 +314,9 @@ func _setup_tile_map() -> void:
 	source.texture_region_size = Vector2i(ATLAS_TILE_SIZE, ATLAS_TILE_SIZE)
 
 	for i in ATLAS_TILE_COUNT:
-		source.create_tile(Vector2i(i, 0))
+		var col: int = i % ATLAS_COLS
+		var row: int = i / ATLAS_COLS
+		source.create_tile(Vector2i(col, row))
 
 	tileset.add_source(source, TILESET_SOURCE_ID)
 
@@ -332,13 +335,14 @@ func _rebuild_map() -> void:
 	for y in MapGen.GRID_HEIGHT:
 		for x in MapGen.GRID_WIDTH:
 			var tile: int = g[y][x]
-			var atlas_x: int = _tile_to_atlas_x(tile)
-			if atlas_x < 0:
+			var idx: int = _tile_to_atlas_index(tile)
+			if idx < 0:
 				continue
-			_tile_map.set_cell(Vector2i(x, y), TILESET_SOURCE_ID, Vector2i(atlas_x, 0))
+			var coords: Vector2i = Vector2i(idx % ATLAS_COLS, idx / ATLAS_COLS)
+			_tile_map.set_cell(Vector2i(x, y), TILESET_SOURCE_ID, coords)
 
 
-func _tile_to_atlas_x(tile: int) -> int:
+func _tile_to_atlas_index(tile: int) -> int:
 	match tile:
 		MapGen.Tile.WALL: return 0
 		MapGen.Tile.FLOOR: return 1
