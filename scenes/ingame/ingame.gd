@@ -207,38 +207,43 @@ func _do_interact() -> void:
 			pass  # メッセージのみ（session.messageで通知済み）
 
 
-## 知識IDからアイコンパスを推定
+## 知識IDからアイコンパスを推定（各知識に専用アイコン）
 const KNOWLEDGE_ICON_MAP: Dictionary = {
-	"K-101": "math_infinity",    # 自然数の定義（汎用）
-	"K-102": "math_sqrt",        # 加法
-	"K-103": "math_sqrt",        # 減法
-	"K-104": "math_zero_vector", # 零の発見
-	"K-105": "math_infinity",    # 負の数
-	"K-106": "math_vector",      # 数直線
-	"K-201": "math_matrix",      # 乗法
-	"K-202": "math_matrix",      # 除法
-	"K-203": "math_probability", # 剰余
-	"K-204": "math_sqrt",        # 分数の定義
-	"K-205": "math_matrix",      # 倍数の定理
-	"K-206": "math_log",         # 約数
-	"K-301": "math_sqrt",        # 絶対値
-	"K-302": "math_vector",      # 符号反転
-	"K-303": "math_sqrt",        # 平方
-	"K-304": "math_sqrt",        # 平方根
-	"K-305": "math_topology",    # ピタゴラスの定理
-	"K-306": "math_matrix",      # 一次方程式
-	"K-401": "math_derivative",  # 微分
-	"K-402": "math_integral",    # 積分
-	"K-403": "math_probability", # 確率
-	"K-404": "math_log",         # 対数
-	"K-405": "math_probability", # 期待値の定理
-	"K-406": "math_infinity",    # 極限
-	"K-501": "math_vector",      # ベクトル
-	"K-502": "math_matrix",      # 行列
-	"K-503": "math_topology",    # 恒等写像
-	"K-504": "math_zero_vector", # ゼロベクトル
-	"K-505": "math_topology",    # 位相変換
-	"K-506": "math_infinity",    # 無限の定義
+	# ステージ1: 石器時代
+	"K-101": "math_natural_num",  # 自然数の定義
+	"K-102": "math_addition",     # 加法
+	"K-103": "math_subtraction",  # 減法
+	"K-104": "math_zero",         # 零の発見
+	"K-105": "math_negative",     # 負の数
+	"K-106": "math_number_line",  # 数直線
+	# ステージ2: 古代文明
+	"K-201": "math_multiply",     # 乗法
+	"K-202": "math_division",     # 除法
+	"K-203": "math_modulo",       # 剰余
+	"K-204": "math_fraction",     # 分数の定義
+	"K-205": "math_multiple",     # 倍数の定理
+	"K-206": "math_divisor",      # 約数
+	# ステージ3: 中世
+	"K-301": "math_absolute",     # 絶対値
+	"K-302": "math_negate",       # 符号反転
+	"K-303": "math_square",       # 平方
+	"K-304": "math_sqrt",         # 平方根
+	"K-305": "math_pythagorean",  # ピタゴラスの定理
+	"K-306": "math_equation",     # 一次方程式
+	# ステージ4: 近代
+	"K-401": "math_derivative",   # 微分
+	"K-402": "math_integral",     # 積分
+	"K-403": "math_probability",  # 確率
+	"K-404": "math_log",          # 対数
+	"K-405": "math_expected",     # 期待値の定理
+	"K-406": "math_limit",        # 極限
+	# ステージ5: 宇宙
+	"K-501": "math_vector",       # ベクトル
+	"K-502": "math_matrix",       # 行列
+	"K-503": "math_identity",     # 恒等写像
+	"K-504": "math_zero_vector",  # ゼロベクトル
+	"K-505": "math_topology",     # 位相変換
+	"K-506": "math_infinity",     # 無限の定義
 }
 
 const ITEM_ICON_MAP: Dictionary = {
@@ -399,7 +404,7 @@ func _grid_to_world(grid_pos: Vector2i) -> Vector2:
 ## 0-5: マップ, 6-12: ギミック, 13-30: アイテム, 31-40: 数学記号
 const ATLAS_TILE_SIZE: int = 128
 const ATLAS_COLS: int = 8
-const ATLAS_TILE_COUNT: int = 41
+const ATLAS_TILE_COUNT: int = 61
 const TILESET_SOURCE_ID: int = 0
 
 func _setup_tile_map() -> void:
