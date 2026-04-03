@@ -207,6 +207,110 @@ func _do_interact() -> void:
 			pass  # メッセージのみ（session.messageで通知済み）
 
 
+## 知識IDからアイコンパスを推定
+const KNOWLEDGE_ICON_MAP: Dictionary = {
+	"K-101": "math_infinity",    # 自然数の定義（汎用）
+	"K-102": "math_sqrt",        # 加法
+	"K-103": "math_sqrt",        # 減法
+	"K-104": "math_zero_vector", # 零の発見
+	"K-105": "math_infinity",    # 負の数
+	"K-106": "math_vector",      # 数直線
+	"K-201": "math_matrix",      # 乗法
+	"K-202": "math_matrix",      # 除法
+	"K-203": "math_probability", # 剰余
+	"K-204": "math_sqrt",        # 分数の定義
+	"K-205": "math_matrix",      # 倍数の定理
+	"K-206": "math_log",         # 約数
+	"K-301": "math_sqrt",        # 絶対値
+	"K-302": "math_vector",      # 符号反転
+	"K-303": "math_sqrt",        # 平方
+	"K-304": "math_sqrt",        # 平方根
+	"K-305": "math_topology",    # ピタゴラスの定理
+	"K-306": "math_matrix",      # 一次方程式
+	"K-401": "math_derivative",  # 微分
+	"K-402": "math_integral",    # 積分
+	"K-403": "math_probability", # 確率
+	"K-404": "math_log",         # 対数
+	"K-405": "math_probability", # 期待値の定理
+	"K-406": "math_infinity",    # 極限
+	"K-501": "math_vector",      # ベクトル
+	"K-502": "math_matrix",      # 行列
+	"K-503": "math_topology",    # 恒等写像
+	"K-504": "math_zero_vector", # ゼロベクトル
+	"K-505": "math_topology",    # 位相変換
+	"K-506": "math_infinity",    # 無限の定義
+}
+
+const ITEM_ICON_MAP: Dictionary = {
+	"herb": "item_herb",
+	"upper_herb": "item_upper_herb",
+	"panacea": "item_panacea",
+	"wisdom_water": "item_wisdom_water",
+	"awakening_water": "item_awakening_water",
+	"elixir": "item_elixir",
+	"even_powder": "item_even_powder",
+	"odd_powder": "item_odd_powder",
+	"zero_scroll": "item_zero_scroll",
+	"reverse_mirror": "item_reverse_mirror",
+	"halving_sand": "item_halving_sand",
+	"map_piece": "item_map_piece",
+	"clairvoyance": "item_clairvoyance",
+	"return_wing": "item_return_wing",
+	"warp_stone": "item_warp_stone",
+	"exp_book": "item_exp_book",
+	"skill_book": "item_skill_book",
+	"slot_expansion": "item_slot_expansion",
+}
+
+const ITEM_NAMES: Dictionary = {
+	"herb": "薬草",
+	"upper_herb": "上薬草",
+	"panacea": "万能薬",
+	"wisdom_water": "知恵の水",
+	"awakening_water": "覚醒の水",
+	"elixir": "エリクサー",
+	"even_powder": "偶数の粉",
+	"odd_powder": "奇数の粉",
+	"zero_scroll": "零の巻物",
+	"reverse_mirror": "反転の鏡",
+	"halving_sand": "半減の砂",
+	"map_piece": "マップの欠片",
+	"clairvoyance": "千里眼の水晶",
+	"return_wing": "帰還の翼",
+	"warp_stone": "ワープの石",
+	"exp_book": "経験の書",
+	"skill_book": "技の書",
+	"slot_expansion": "スロット拡張",
+}
+
+const ITEM_DESCS: Dictionary = {
+	"herb": "HPを10回復する",
+	"upper_herb": "HPを30回復する",
+	"panacea": "HPを全回復する",
+	"wisdom_water": "MPを5回復する",
+	"awakening_water": "MPを全回復する",
+	"elixir": "HP/MPを全回復する",
+	"even_powder": "敵の数値を最寄りの偶数にする",
+	"odd_powder": "敵の数値を最寄りの奇数にする",
+	"zero_scroll": "敵の数値を0にする",
+	"reverse_mirror": "敵の数値の符号を反転する",
+	"halving_sand": "敵の数値を半分にする",
+	"map_piece": "現在フロアの地図を表示する",
+	"clairvoyance": "敵と宝箱の位置を表示する",
+	"return_wing": "フロアの入口に戻る",
+	"warp_stone": "ランダムな部屋に移動する",
+	"exp_book": "経験値を50獲得する",
+	"skill_book": "未獲得の知識を1つ獲得する",
+	"slot_expansion": "技スロットを1つ追加する",
+}
+
+
+func _get_icon_path(sprite_name: String) -> String:
+	if sprite_name == "":
+		return ""
+	return "res://assets/sprites/%s.png" % sprite_name
+
+
 func _show_knowledge_popup(knowledge_id: String) -> void:
 	if _popup == null or knowledge_id == "":
 		return
@@ -219,22 +323,17 @@ func _show_knowledge_popup(knowledge_id: String) -> void:
 		if not skill_info.is_empty():
 			skill_desc = skill_info["name"]
 	var field_desc: String = info.get("field_effect", "")
-	_popup.show_knowledge(info["name"], info["category"], skill_desc, field_desc)
+	var icon_name: String = KNOWLEDGE_ICON_MAP.get(knowledge_id, "")
+	_popup.show_knowledge(info["name"], info["category"], skill_desc, field_desc, _get_icon_path(icon_name))
 
 
 func _show_item_popup(item_id: String) -> void:
 	if _popup == null or item_id == "":
 		return
-	# アイテム名と説明（仮定義）
-	var item_names: Dictionary = {
-		"herb": "薬草",
-	}
-	var item_descs: Dictionary = {
-		"herb": "HPを10回復する",
-	}
-	var name_str: String = item_names.get(item_id, item_id)
-	var desc_str: String = item_descs.get(item_id, "")
-	_popup.show_item(name_str, desc_str)
+	var name_str: String = ITEM_NAMES.get(item_id, item_id)
+	var desc_str: String = ITEM_DESCS.get(item_id, "")
+	var icon_name: String = ITEM_ICON_MAP.get(item_id, "")
+	_popup.show_item(name_str, desc_str, _get_icon_path(icon_name))
 
 
 func _direction_name(dir: Vector2i) -> String:

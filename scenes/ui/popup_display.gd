@@ -10,7 +10,7 @@ var _is_showing: bool = false
 
 func _ready() -> void:
 	visible = false
-	$Panel/CloseButton.pressed.connect(hide_popup)
+	$Panel/VBox/CloseButton.pressed.connect(hide_popup)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -25,8 +25,19 @@ func is_showing() -> bool:
 	return _is_showing
 
 
+## アイコンテクスチャを設定
+func _set_icon(icon_path: String) -> void:
+	var icon_rect: TextureRect = $Panel/VBox/IconRect
+	if icon_path != "" and ResourceLoader.exists(icon_path):
+		icon_rect.texture = load(icon_path)
+		icon_rect.visible = true
+	else:
+		icon_rect.texture = null
+		icon_rect.visible = false
+
+
 ## 知識獲得ポップアップ
-func show_knowledge(knowledge_name: String, category: String, skill_desc: String, field_desc: String) -> void:
+func show_knowledge(knowledge_name: String, category: String, skill_desc: String, field_desc: String, icon_path: String = "") -> void:
 	var cat_name: String = ""
 	match category:
 		"definition": cat_name = "定義"
@@ -42,19 +53,21 @@ func show_knowledge(knowledge_name: String, category: String, skill_desc: String
 		text += "フィールド: %s\n" % field_desc
 	text += "\n(決定キーで閉じる)"
 
-	$Panel/ContentLabel.text = text
+	_set_icon(icon_path)
+	$Panel/VBox/ContentLabel.text = text
 	_show()
 
 
 ## アイテム獲得ポップアップ
-func show_item(item_name: String, item_desc: String) -> void:
+func show_item(item_name: String, item_desc: String, icon_path: String = "") -> void:
 	var text: String = "-- アイテムを獲得 --\n\n"
 	text += "「%s」\n\n" % item_name
 	if item_desc != "":
 		text += "%s\n" % item_desc
 	text += "\n(決定キーで閉じる)"
 
-	$Panel/ContentLabel.text = text
+	_set_icon(icon_path)
+	$Panel/VBox/ContentLabel.text = text
 	_show()
 
 
