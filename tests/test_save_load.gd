@@ -53,7 +53,9 @@ func test_serialize_player() -> void:
 	assert_int(data["player"]["hp"]).is_equal(25)
 	assert_int(data["player"]["max_hp"]).is_equal(30)
 	assert_int(data["player"]["level"]).is_equal(1)
-	assert_array(data["player"]["skill_slots"]).contains(["plus_1", "minus_1"])
+	# 初期は技なし（全て空文字）
+	for s in data["player"]["skill_slots"]:
+		assert_str(s).is_empty()
 
 
 # AC-SAVE-004: 敵情報がシリアライズされる

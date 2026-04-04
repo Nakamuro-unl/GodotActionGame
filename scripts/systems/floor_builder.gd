@@ -40,8 +40,13 @@ func spawn_enemies(session: Node, stage: int) -> void:
 		session.enemies.append(enemy)
 
 
-func place_chests(session: Node, stage: int) -> void:
+func place_chests(session: Node, stage: int, is_first_floor: bool = false) -> void:
 	session.chest_positions.clear()
+
+	# 開始部屋に宝箱を確定配置（1Fのみ）
+	if is_first_floor:
+		_place_start_room_chest(session)
+
 	var count_range: Vector2i = SessionData.STAGE_CHEST_COUNT.get(stage, Vector2i(1, 2))
 	var count: int = _rng.randi_range(count_range.x, count_range.y)
 	var rooms: Array = session.map_generator.get_rooms()
@@ -51,6 +56,24 @@ func place_chests(session: Node, stage: int) -> void:
 		if pos != Vector2i(1, 1):
 			session.chest_positions.append(pos)
 			session.grid[pos.y][pos.x] = MapGen.Tile.CHEST
+
+
+func _place_start_room_chest(session: Node) -> void:
+	## 開始部屋（プレイヤーの部屋）に宝箱を1個配置
+	var rooms: Array = session.map_generator.get_rooms()
+	if rooms.is_empty():
+		return
+	var start_room: Rect2i = rooms[0]
+	# プレイヤー位置から少しずらした位置に配置
+	var cx: int = start_room.position.x + start_room.size.x / 2
+	var cy: int = start_room.position.y + start_room.size.y / 2 + 1
+	if cy >= start_room.position.y + start_room.size.y:
+		cy = start_room.position.y + start_room.size.y - 1
+	var pos: Vector2i = Vector2i(cx, cy)
+	session.chest_positions.append(pos)
+	session.grid[pos.y][pos.x] = MapGen.Tile.CHEST
+	# 開始部屋の宝箱は固定知識を設定
+	session._start_chest_pos = pos
 
 
 func place_gimmicks(session: Node, stage: int) -> void:

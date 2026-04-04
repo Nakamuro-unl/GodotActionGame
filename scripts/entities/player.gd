@@ -35,10 +35,17 @@ func setup(grid: Array, start_pos: Vector2i) -> void:
 func _init_skill_slots() -> void:
 	skill_slots.clear()
 	skill_slots.resize(MAX_SKILL_SLOTS)
-	skill_slots[0] = "plus_1"
-	skill_slots[1] = "minus_1"
-	for i in range(2, MAX_SKILL_SLOTS):
+	for i in MAX_SKILL_SLOTS:
 		skill_slots[i] = null
+
+
+## 空きスロットに技を自動装備する。空きがなければ何もしない。
+func auto_equip_skill(skill_id: String) -> bool:
+	for i in MAX_SKILL_SLOTS:
+		if skill_slots[i] == null:
+			skill_slots[i] = skill_id
+			return true
+	return false
 
 
 # --- 移動 ---

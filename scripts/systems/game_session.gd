@@ -35,6 +35,7 @@ var player: Node
 var enemies: Array = []
 var grid: Array = []
 var chest_positions: Array[Vector2i] = []
+var _start_chest_pos: Vector2i = Vector2i(-1, -1)  # 開始部屋の固定宝箱位置
 var current_stage: int = 1
 var current_floor: int = 1
 var seed_value: int = 0
@@ -92,8 +93,9 @@ func _generate_floor() -> void:
 	grid = map_generator.generate_floor(current_stage, floor_seed)
 	player.setup(grid, map_generator.get_player_start())
 
+	_start_chest_pos = Vector2i(-1, -1)
 	_floor_builder.spawn_enemies(self, current_stage)
-	_floor_builder.place_chests(self, current_stage)
+	_floor_builder.place_chests(self, current_stage, current_floor == 1)
 	_floor_builder.place_gimmicks(self, current_stage)
 	floor_changed.emit(current_floor, current_stage)
 
@@ -175,17 +177,18 @@ func _open_chest_at(pos: Vector2i) -> Dictionary:
 	chest_positions.erase(pos)
 	grid[pos.y][pos.x] = MapGen.Tile.FLOOR
 
+	# 開始部屋の固定宝箱: 減法 (K-103)
+	if pos == _start_chest_pos:
+		_start_chest_pos = Vector2i(-1, -1)
+		return _acquire_knowledge("K-103")
+
 	var has_unobtained: bool = knowledge_system.get_random_unobtained(current_stage) != ""
 	var roll: String = drop_table.roll_chest_type(has_unobtained)
 
 	if roll == "knowledge":
 		var knowledge_id: String = knowledge_system.get_random_unobtained(current_stage)
 		if knowledge_id != "":
-			knowledge_system.acquire(knowledge_id)
-			score_system.register_knowledge()
-			var info: Dictionary = knowledge_system.get_info(knowledge_id)
-			message.emit("宝箱から「%s」を手に入れた!" % info["name"])
-			return {"type": "chest_knowledge", "knowledge_id": knowledge_id, "name": info["name"]}
+			return _acquire_knowledge(knowledge_id)
 
 	# アイテム抽選
 	var item: Dictionary = drop_table.pick_item(current_stage)
@@ -193,6 +196,17 @@ func _open_chest_at(pos: Vector2i) -> Dictionary:
 	player.add_item(item_id)
 	message.emit("宝箱からアイテムを手に入れた!")
 	return {"type": "chest_item", "item_id": item_id}
+
+
+func _acquire_knowledge(knowledge_id: String) -> Dictionary:
+	knowledge_system.acquire(knowledge_id)
+	score_system.register_knowledge()
+	var info: Dictionary = knowledge_system.get_info(knowledge_id)
+	# 技がある知識なら自動装備
+	if info.has("skill_id") and info["skill_id"] != "":
+		player.auto_equip_skill(info["skill_id"])
+	message.emit("宝箱から「%s」を手に入れた!" % info["name"])
+	return {"type": "chest_knowledge", "knowledge_id": knowledge_id, "name": info["name"]}
 
 
 func _try_resolve_gimmick(pos: Vector2i) -> Dictionary:

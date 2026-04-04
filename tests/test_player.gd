@@ -158,14 +158,12 @@ func test_consume_mp_fails_when_insufficient() -> void:
 
 # --- 技スロット ---
 
-# AC-PLR-004: 初期技が2つ装備されていること
+# AC-INV-001: 初期は技なし
 func test_initial_skills() -> void:
 	var slots: Array = _player.skill_slots
 	assert_int(slots.size()).is_equal(6)
-	# スロット0,1に初期技、残りはnull
-	assert_str(slots[0]).is_equal("plus_1")
-	assert_str(slots[1]).is_equal("minus_1")
-	assert_that(slots[2]).is_null()
+	for i in slots.size():
+		assert_that(slots[i]).is_null()
 
 
 # AC-PLR-004: 技を装備できること

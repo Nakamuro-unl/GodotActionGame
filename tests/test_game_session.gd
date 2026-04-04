@@ -67,19 +67,17 @@ func test_player_move_to_wall_no_turn() -> void:
 # --- 技の使用 ---
 
 func test_use_skill_on_adjacent_enemy() -> void:
-	# 敵をプレイヤーの隣に配置
+	# 技を装備してから使用
+	_session.player.auto_equip_skill("minus_1")
 	var player_pos: Vector2i = _session.player.grid_pos
 	if _session.enemies.size() > 0:
 		_session.enemies[0].grid_pos = player_pos + Vector2i.RIGHT
-		var old_value: int = _session.enemies[0].value
 		var result: Dictionary = _session.try_use_skill(0, Vector2i.RIGHT)
-		# 初期技(plus_1)を使用
 		assert_bool(result["success"]).is_true()
 
 
 func test_use_skill_no_enemy_fails() -> void:
-	# 敵がいない方向に技を使う
-	# まず全敵を遠くに移動
+	_session.player.auto_equip_skill("minus_1")
 	for e in _session.enemies:
 		e.grid_pos = Vector2i(1, 1)
 	var result: Dictionary = _session.try_use_skill(0, Vector2i.DOWN)
@@ -91,26 +89,26 @@ func test_use_skill_no_enemy_fails() -> void:
 func test_enemy_defeat_gives_exp() -> void:
 	if _session.enemies.size() == 0:
 		return
+	_session.player.auto_equip_skill("minus_1")
 	var enemy: Node = _session.enemies[0]
 	var player_pos: Vector2i = _session.player.grid_pos
 	enemy.grid_pos = player_pos + Vector2i.RIGHT
 	enemy.set_value(1)  # 残り1
-	var old_exp: int = _session.player.exp + _session.player.level * 10 * (_session.player.level - 1) / 2
-	_session.try_use_skill(1, Vector2i.RIGHT)  # minus_1 → 0 → 撃破
-	# 敵が撃破リストから除去される
+	_session.try_use_skill(0, Vector2i.RIGHT)  # minus_1 → 0 → 撃破
 	assert_bool(enemy.state == ES.EnemyState.DEFEATED).is_true()
 
 
 func test_enemy_defeat_updates_score() -> void:
 	if _session.enemies.size() == 0:
 		return
+	_session.player.auto_equip_skill("minus_1")
 	var enemy: Node = _session.enemies[0]
 	var player_pos: Vector2i = _session.player.grid_pos
 	enemy.grid_pos = player_pos + Vector2i.RIGHT
 	var exp_r: int = enemy.exp_reward
 	enemy.set_value(1)
 	var kills_before: int = _session.score_system.total_kills
-	_session.try_use_skill(1, Vector2i.RIGHT)  # minus_1
+	_session.try_use_skill(0, Vector2i.RIGHT)  # minus_1 (slot 0に装備済み)
 	assert_int(_session.score_system.total_kills).is_equal(kills_before + 1)
 
 
