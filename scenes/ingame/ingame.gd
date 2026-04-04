@@ -12,6 +12,7 @@ const PopupScene = preload("res://scenes/ui/popup_display.tscn")
 const Renderer = preload("res://scenes/ingame/ingame_renderer.gd")
 const Data = preload("res://scenes/ingame/ingame_data.gd")
 const Actions = preload("res://scenes/ingame/ingame_actions.gd")
+const PlatformUI = preload("res://scripts/systems/platform_ui.gd")
 const ItemMenuScene = preload("res://scenes/ui/item_menu.tscn")
 const ItemSysScript = preload("res://scripts/systems/item_system.gd")
 const InventoryScene = preload("res://scenes/ui/inventory_screen.tscn")
@@ -29,6 +30,7 @@ var _inventory: Node = null
 var _skill_swap: Node = null
 var _game_over_effect: Node = null
 var _renderer: Renderer
+var _platform: int = PlatformUI.Platform.PC
 
 
 func _ready() -> void:
@@ -50,6 +52,7 @@ func _ready() -> void:
 	_vpad.skill_pressed.connect(_do_skill)
 	_vpad.wait_pressed.connect(_do_wait)
 	_vpad.interact_pressed.connect(_do_interact)
+	_vpad.menu_pressed.connect(_open_inventory)
 
 	_popup = PopupScene.instantiate()
 	add_child(_popup)
@@ -94,6 +97,18 @@ func _ready() -> void:
 		_add_message("セーブデータをロードしました (%dF)" % session.current_floor)
 	else:
 		_add_message("ステージ1 - 石器時代 1F")
+
+	_apply_platform_ui()
+
+
+func _apply_platform_ui() -> void:
+	_platform = PlatformUI.detect_platform()
+	var config: Dictionary = PlatformUI.get_ui_config(_platform)
+	_vpad.visible = config["show_virtual_pad"]
+	$UILayer/SkillSlots.visible = config["show_skill_slots_hud"]
+	$UILayer/KeyHints.visible = config["show_keyboard_hints"]
+	if config["show_keyboard_hints"]:
+		$UILayer/KeyHints.text = PlatformUI.get_keyboard_hints()
 
 
 func _process(_delta: float) -> void:
@@ -303,15 +318,19 @@ func _update_hud() -> void:
 
 	_update_skill_slot_icons(p)
 
-	if _vpad:
+	if _vpad and _vpad.visible:
 		var vpad_names: Array[String] = []
+		var vpad_icons: Array[String] = []
 		for i in p.skill_slots.size():
 			var sid = p.skill_slots[i]
 			if sid == null or sid == "":
 				vpad_names.append("---")
+				vpad_icons.append("")
 			else:
 				vpad_names.append(session.combat_system.get_skill_info(sid).get("name", sid))
-		_vpad.update_skill_labels(vpad_names)
+				var icon_name: String = _find_skill_icon(sid)
+				vpad_icons.append(Data.get_icon_path(icon_name))
+		_vpad.update_skill_labels(vpad_names, vpad_icons)
 
 
 func _update_skill_slot_icons(p: Node) -> void:
