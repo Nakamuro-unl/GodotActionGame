@@ -3,14 +3,14 @@ extends Node
 ## スコアの記録・算出・ランキング管理を担当する。
 
 const KILL_MULTIPLIER: int = 10
-const FLOOR_SCORE: int = 500
-const BOSS_BONUS: int = 3000
-const KNOWLEDGE_BONUS: int = 200
-const COMBO_BASE: int = 100
+const FLOOR_SCORE: int = 1000
+const BOSS_BONUS: int = 5000
+const KNOWLEDGE_BONUS: int = 300
+const COMBO_BASE: int = 150
 const HP_BONUS_MULTIPLIER: int = 50
 const MP_BONUS_MULTIPLIER: int = 30
-const TURN_PENALTY_RATE: int = 2
-const GHOST_PENALTY: int = 50
+const TURN_PENALTY_RATE: int = 1
+const GHOST_PENALTY: int = 30
 const MAX_RANKING: int = 10
 
 var total_kills: int = 0

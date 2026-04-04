@@ -35,7 +35,8 @@ const SCENE_PATHS: Dictionary = {
 }
 
 var current_state: State = State.TITLE
-var should_load_save: bool = false  # trueならInGameシーンでセーブデータをロード
+var should_load_save: bool = false
+var last_result: Dictionary = {}  # リザルト画面に渡すスコアデータ
 
 
 func change_state(new_state: State) -> bool:

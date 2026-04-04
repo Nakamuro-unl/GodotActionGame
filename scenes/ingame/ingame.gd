@@ -360,6 +360,7 @@ func _on_player_damaged_visual(_amount: int) -> void:
 
 
 func _on_game_over() -> void:
+	_store_result(false)
 	_audio.play("gameover")
 	_game_over_effect.play()
 
@@ -369,12 +370,30 @@ func _on_game_over_finished() -> void:
 	if gm:
 		gm.change_state(GMS.State.RESULT)
 
+
 func _on_game_clear() -> void:
+	_store_result(true)
 	_add_message("GAME CLEAR!")
 	await get_tree().create_timer(1.5).timeout
 	var gm: Node = get_node_or_null("/root/GameManager")
 	if gm:
 		gm.change_state(GMS.State.RESULT)
+
+
+func _store_result(cleared: bool) -> void:
+	var hp: int = session.player.hp if cleared else 0
+	var mp: int = session.player.mp if cleared else 0
+	var result: Dictionary = session.score_system.calculate_final(cleared, hp, mp)
+	result["cleared"] = cleared
+	result["floor_reached"] = session.current_floor
+	result["enemies_defeated"] = session.score_system.total_kills
+	result["max_combo"] = session.score_system.max_combo
+	result["knowledge_count"] = session.score_system.knowledge_count
+	result["total_turns"] = session.score_system.total_turns
+	result["seed"] = session.seed_value
+	var gm: Node = get_node_or_null("/root/GameManager")
+	if gm:
+		gm.last_result = result
 
 func _on_floor_changed(floor_number: int, stage: int) -> void:
 	var stage_names: Array[String] = ["", "石器時代", "古代文明", "中世", "近代", "宇宙"]

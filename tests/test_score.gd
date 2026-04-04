@@ -86,12 +86,12 @@ func test_max_combo_tracks_highest() -> void:
 	assert_int(_score.combo_count).is_equal(1)
 
 
-# コンボボーナス計算: 100 * (1+2+...+n)
+# コンボボーナス計算: 150 * (1+2+...+n)
 func test_combo_bonus_calculation() -> void:
 	for i in 5:
 		_score.register_perfect_kill()
-	# 100 * (1+2+3+4+5) = 1500
-	assert_int(_score.get_combo_bonus()).is_equal(1500)
+	# 150 * (1+2+3+4+5) = 2250
+	assert_int(_score.get_combo_bonus()).is_equal(2250)
 
 
 # リセット後のコンボボーナスは現在のコンボのみ
@@ -101,9 +101,9 @@ func test_combo_bonus_after_reset() -> void:
 	_score.register_ghost()
 	_score.register_perfect_kill()
 	_score.register_perfect_kill()
-	# 現在コンボ2: 100 * (1+2) = 300、過去コンボ3: 100 * (1+2+3) = 600
-	# 累計 = 900
-	assert_int(_score.get_combo_bonus()).is_equal(900)
+	# 現在コンボ2: 150 * (1+2) = 450、過去コンボ3: 150 * (1+2+3) = 900
+	# 累計 = 1350
+	assert_int(_score.get_combo_bonus()).is_equal(1350)
 
 
 # --- 幽霊化ペナルティ ---
@@ -164,14 +164,14 @@ func test_calculate_final_score() -> void:
 	var result: Dictionary = _score.calculate_final(true, 20, 8)
 
 	assert_int(result["kill_score"]).is_equal(500)       # (10+10+30)*10
-	assert_int(result["floor_score"]).is_equal(2500)     # 5*500
-	assert_int(result["boss_bonus"]).is_equal(3000)      # 1*3000
-	assert_int(result["knowledge_bonus"]).is_equal(600)  # 3*200
-	assert_int(result["combo_bonus"]).is_equal(600)      # 100*(1+2+3)
+	assert_int(result["floor_score"]).is_equal(5000)     # 5*1000
+	assert_int(result["boss_bonus"]).is_equal(5000)      # 1*5000
+	assert_int(result["knowledge_bonus"]).is_equal(900)  # 3*300
+	assert_int(result["combo_bonus"]).is_equal(900)      # 150*(1+2+3)
 	assert_int(result["hp_bonus"]).is_equal(1000)        # 20*50
 	assert_int(result["mp_bonus"]).is_equal(240)         # 8*30
-	assert_int(result["turn_penalty"]).is_equal(-200)    # -100*2
-	assert_int(result["ghost_penalty"]).is_equal(-50)    # -1*50
+	assert_int(result["turn_penalty"]).is_equal(-100)    # -100*1
+	assert_int(result["ghost_penalty"]).is_equal(-30)    # -1*30
 
 
 # AC-SCR-006: スコアは0を下回らない
