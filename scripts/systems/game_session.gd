@@ -8,7 +8,11 @@ signal game_over()
 signal game_clear()
 signal floor_changed(floor_number: int, stage: int)
 signal message(text: String)
-signal skill_slot_full(skill_id: String, skill_name: String)  # スロット満杯時
+signal skill_slot_full(skill_id: String, skill_name: String)
+signal enemy_defeated_visual(enemy: Node)  # 撃破アニメーション用
+signal enemy_ghostified_visual()
+signal player_damaged_visual(amount: int)
+signal player_leveled_up_visual()
 
 const MapGen = preload("res://scripts/systems/map_generator.gd")
 const TurnMgr = preload("res://scripts/systems/turn_manager.gd")
@@ -253,6 +257,7 @@ func _on_enemy_phase() -> void:
 			var dmg: int = combat_system.calculate_damage(enemy, player)
 			if dmg > 0:
 				player.take_damage(dmg)
+				player_damaged_visual.emit(dmg)
 				message.emit("%s の攻撃! %d ダメージ!" % [enemy.enemy_name, dmg])
 
 
@@ -282,6 +287,7 @@ func _on_enemy_defeated(enemy: Node) -> void:
 		score_system.register_boss_kill(0)  # exp は既に register_kill で加算済み
 		_drop_boss_theorem()
 
+	enemy_defeated_visual.emit(enemy)
 	if enemy.value == 0:
 		score_system.register_perfect_kill()
 		message.emit("%s を倒した! コンボ x%d!" % [enemy.enemy_name, score_system.combo_count])
@@ -300,6 +306,7 @@ func _drop_boss_theorem() -> void:
 
 func _on_enemy_ghostified() -> void:
 	score_system.register_ghost()
+	enemy_ghostified_visual.emit()
 
 
 # --- ヘルパー ---

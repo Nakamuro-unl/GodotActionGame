@@ -249,6 +249,49 @@ func _get_boss_texture(enemy: Node) -> Texture2D:
 	return tex_enemy_normal
 
 
+## プレイヤーの攻撃アニメーション（向き方向に突進→戻る）
+func animate_attack(facing: Vector2i, owner_node: Node) -> Tween:
+	var origin: Vector2 = player_sprite.position
+	var lunge: Vector2 = origin + Vector2(facing.x * TILE_SIZE * 0.4, facing.y * TILE_SIZE * 0.4)
+	var tween: Tween = owner_node.create_tween()
+	tween.tween_property(player_sprite, "position", lunge, 0.06).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+	tween.tween_property(player_sprite, "position", origin, 0.06).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
+	return tween
+
+
+## 敵の攻撃アニメーション（プレイヤー方向に突進→戻る）
+func animate_enemy_attack(enemy: Node, player_pos: Vector2i, owner_node: Node) -> void:
+	if not enemy_sprites.has(enemy):
+		return
+	var spr: Sprite2D = enemy_sprites[enemy]
+	var origin: Vector2 = spr.position
+	var dir: Vector2i = player_pos - enemy.grid_pos
+	var lunge: Vector2 = origin + Vector2(dir.x * TILE_SIZE * 0.3, dir.y * TILE_SIZE * 0.3)
+	var tween: Tween = owner_node.create_tween()
+	tween.tween_property(spr, "position", lunge, 0.05).set_ease(Tween.EASE_OUT)
+	tween.tween_property(spr, "position", origin, 0.05).set_ease(Tween.EASE_IN)
+
+
+## 敵撃破アニメーション（縮小→消滅）
+func animate_defeat(enemy: Node, owner_node: Node) -> void:
+	if not enemy_sprites.has(enemy):
+		return
+	var spr: Sprite2D = enemy_sprites[enemy]
+	var tween: Tween = owner_node.create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(spr, "scale", Vector2.ZERO, 0.25).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_BACK)
+	tween.tween_property(spr, "modulate:a", 0.0, 0.25)
+
+
+## プレイヤー被ダメフラッシュ
+func animate_player_damage(owner_node: Node) -> void:
+	var tween: Tween = owner_node.create_tween()
+	tween.tween_property(player_sprite, "modulate", Color(1, 0.3, 0.3), 0.05)
+	tween.tween_property(player_sprite, "modulate", Color.WHITE, 0.05)
+	tween.tween_property(player_sprite, "modulate", Color(1, 0.3, 0.3), 0.05)
+	tween.tween_property(player_sprite, "modulate", Color.WHITE, 0.05)
+
+
 ## Tweenアニメーションでエンティティを滑らかに移動
 func animate_turn(enemies: Array, player_pos: Vector2i, camera: Camera2D, owner_node: Node) -> Tween:
 	var tween: Tween = owner_node.create_tween()

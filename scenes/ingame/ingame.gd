@@ -12,7 +12,9 @@ const PopupScene = preload("res://scenes/ui/popup_display.tscn")
 const Renderer = preload("res://scenes/ingame/ingame_renderer.gd")
 const Data = preload("res://scenes/ingame/ingame_data.gd")
 const Actions = preload("res://scenes/ingame/ingame_actions.gd")
+const HudHelper = preload("res://scenes/ingame/ingame_hud.gd")
 const PlatformUI = preload("res://scripts/systems/platform_ui.gd")
+const AudioMgr = preload("res://scripts/systems/audio_manager.gd")
 const ItemMenuScene = preload("res://scenes/ui/item_menu.tscn")
 const ItemSysScript = preload("res://scripts/systems/item_system.gd")
 const InventoryScene = preload("res://scenes/ui/inventory_screen.tscn")
@@ -30,12 +32,16 @@ var _inventory: Node = null
 var _skill_swap: Node = null
 var _game_over_effect: Node = null
 var _renderer: Renderer
+var _audio: Node
 var _platform: int = PlatformUI.Platform.PC
 
 
 func _ready() -> void:
 	_renderer = Renderer.new()
 	_renderer.setup($MapLayer, $EntityLayer)
+
+	_audio = AudioMgr.new()
+	add_child(_audio)
 
 	session = GameSessionScript.new()
 	add_child(session)
@@ -44,6 +50,9 @@ func _ready() -> void:
 	session.floor_changed.connect(_on_floor_changed)
 	session.message.connect(_on_message)
 	session.skill_slot_full.connect(_on_skill_slot_full)
+	session.enemy_defeated_visual.connect(_on_enemy_defeated_visual)
+	session.enemy_ghostified_visual.connect(_on_enemy_ghostified_visual)
+	session.player_damaged_visual.connect(_on_player_damaged_visual)
 
 	_vpad = VirtualPadScene.instantiate()
 	add_child(_vpad)
@@ -177,6 +186,7 @@ func _do_move(direction: Vector2i) -> void:
 	_facing = direction
 	_renderer.update_player_facing(_facing)
 	if session.try_player_move(direction):
+		_audio.play("step")
 		_after_turn_animated()
 
 
@@ -191,8 +201,11 @@ func _do_skill(slot_index: int) -> void:
 	if result["success"]:
 		var info: Dictionary = session.combat_system.get_skill_info(skill_id)
 		_add_message("%s を使った! %d -> %d" % [info["name"], result["old_value"], result["new_value"]])
+		_renderer.animate_attack(_facing, self)
+		_audio.play("hit")
 		_after_turn_animated()
 	else:
+		_audio.play("miss")
 		_add_message("正面に敵がいない（向き: %s）" % _direction_name(_facing))
 
 
@@ -210,10 +223,12 @@ func _do_interact() -> void:
 			_renderer.update_entities_immediate(session.player.grid_pos, session.enemies, $Camera2D)
 			_update_hud()
 		"chest_knowledge":
+			_audio.play("chest")
 			_renderer.rebuild_map(session.grid)
 			_update_hud()
 			_show_knowledge_popup(result.get("knowledge_id", ""))
 		"chest_item":
+			_audio.play("chest")
 			_renderer.rebuild_map(session.grid)
 			_update_hud()
 			_show_item_popup(result.get("item_id", ""))
@@ -277,6 +292,7 @@ func _update_minimap() -> void:
 # --- インベントリ ---
 
 func _open_inventory() -> void:
+	_audio.play("menu")
 	_inventory.show_inventory(session.player, session.knowledge_system)
 
 
@@ -308,81 +324,9 @@ func _on_item_selected(index: int) -> void:
 
 func _update_hud() -> void:
 	var p: Node = session.player
-	var combo_text: String = ""
-	if session.score_system.combo_count > 0:
-		combo_text = "  Combo: %d" % session.score_system.combo_count
-	$UILayer/HUD.text = "HP:%d/%d  MP:%d/%d  Lv:%d  F:%dF  Turn:%d  [%s]%s" % [
-		p.hp, p.max_hp, p.mp, p.max_mp, p.level,
-		session.current_floor, session.turn_manager.turn_count, _direction_name(_facing), combo_text
-	]
-
-	_update_skill_slot_icons(p)
-
-	if _vpad and _vpad.visible:
-		var vpad_names: Array[String] = []
-		var vpad_icons: Array[String] = []
-		for i in p.skill_slots.size():
-			var sid = p.skill_slots[i]
-			if sid == null or sid == "":
-				vpad_names.append("---")
-				vpad_icons.append("")
-			else:
-				vpad_names.append(session.combat_system.get_skill_info(sid).get("name", sid))
-				var icon_name: String = _find_skill_icon(sid)
-				vpad_icons.append(Data.get_icon_path(icon_name))
-		_vpad.update_skill_labels(vpad_names, vpad_icons)
-
-
-func _update_skill_slot_icons(p: Node) -> void:
-	var container: HBoxContainer = $UILayer/SkillSlots
-	# 既存の子を削除
-	for child in container.get_children():
-		child.queue_free()
-
-	for i in p.skill_slots.size():
-		var sid = p.skill_slots[i]
-		var slot_box: HBoxContainer = HBoxContainer.new()
-		slot_box.add_theme_constant_override("separation", 1)
-
-		if sid == null or sid == "":
-			var lbl: Label = Label.new()
-			lbl.text = "[%d]---" % (i + 1)
-			lbl.add_theme_font_size_override("font_size", 10)
-			lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
-			slot_box.add_child(lbl)
-		else:
-			# アイコン: 知識IDからスプライト名を取得
-			var icon_name: String = _find_skill_icon(sid)
-			if icon_name != "":
-				var icon_path: String = Data.get_icon_path(icon_name)
-				if ResourceLoader.exists(icon_path):
-					var tex_rect: TextureRect = TextureRect.new()
-					tex_rect.texture = load(icon_path)
-					tex_rect.custom_minimum_size = Vector2(16, 16)
-					tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-					tex_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-					slot_box.add_child(tex_rect)
-
-			var info: Dictionary = session.combat_system.get_skill_info(sid)
-			var lbl: Label = Label.new()
-			lbl.text = "[%d]%s" % [i + 1, info.get("name", sid)]
-			lbl.add_theme_font_size_override("font_size", 10)
-			# MP不足ならグレーアウト
-			var mp_cost: int = int(info.get("mp_cost", 0))
-			if p.mp < mp_cost:
-				lbl.add_theme_color_override("font_color", Color(0.4, 0.4, 0.4))
-			slot_box.add_child(lbl)
-
-		container.add_child(slot_box)
-
-
-func _find_skill_icon(skill_id: String) -> String:
-	## スキルIDに対応する知識のアイコンを探す
-	for kid in Data.KNOWLEDGE_ICON_MAP:
-		var info: Dictionary = session.knowledge_system.get_info(kid)
-		if not info.is_empty() and info.get("skill_id", "") == skill_id:
-			return Data.KNOWLEDGE_ICON_MAP[kid]
-	return ""
+	HudHelper.update_status_bar($UILayer/HUD, p, session, _direction_name(_facing))
+	HudHelper.update_skill_slots($UILayer/SkillSlots, p, session)
+	HudHelper.update_vpad(_vpad, p, session)
 
 
 # --- メッセージログ ---
@@ -401,7 +345,22 @@ func _on_message(text: String) -> void:
 
 # --- イベント ---
 
+func _on_enemy_defeated_visual(enemy: Node) -> void:
+	_audio.play("defeat")
+	_renderer.animate_defeat(enemy, self)
+
+
+func _on_enemy_ghostified_visual() -> void:
+	_audio.play("ghost")
+
+
+func _on_player_damaged_visual(_amount: int) -> void:
+	_audio.play("damage")
+	_renderer.animate_player_damage(self)
+
+
 func _on_game_over() -> void:
+	_audio.play("gameover")
 	_game_over_effect.play()
 
 
