@@ -9,7 +9,6 @@ signal phase_changed(phase: Phase)
 signal player_phase_started()
 signal enemy_phase_started()
 signal environment_phase_started()
-signal ghost_recovery_triggered()
 signal hp_regen_triggered()
 
 enum Phase {
@@ -66,7 +65,5 @@ func _set_phase(phase: Phase) -> void:
 
 
 func _process_environment() -> void:
-	ghost_recovery_triggered.emit()
-
 	if turn_count % HP_REGEN_INTERVAL == 0:
 		hp_regen_triggered.emit()

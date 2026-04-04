@@ -89,16 +89,9 @@ func _check_state_after_value_change() -> void:
 		ghostified.emit()
 
 
-## 幽霊の自然回復（毎ターン+1）
+## 幽霊の自然回復は行わない（攻撃でのみ数値変動）
 func process_ghost_recovery() -> void:
-	if state != EnemyState.GHOST:
-		return
-	value += 1
-	if value == 0:
-		state = EnemyState.DEFEATED
-		defeated.emit()
-	elif value > 0:
-		state = EnemyState.NORMAL
+	pass
 
 
 # --- 攻撃 ---

@@ -133,9 +133,4 @@ func test_hp_regen_check_every_10_turns() -> void:
 	assert_int(counter[0]).is_equal(2)
 
 
-# AC-TURN-006: 環境フェーズで幽霊回復シグナルが発火する
-func test_ghost_recovery_signal() -> void:
-	var counter := [0]
-	_tm.ghost_recovery_triggered.connect(func() -> void: counter[0] += 1)
-	_tm.execute_player_action()
-	assert_int(counter[0]).is_equal(1)
+# 幽霊の自然回復は廃止（攻撃でのみ数値変動）

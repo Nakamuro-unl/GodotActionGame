@@ -241,9 +241,7 @@ func _on_enemy_phase() -> void:
 
 
 func _on_environment_phase() -> void:
-	for enemy in enemies:
-		if enemy.state == EnemyScript.EnemyState.GHOST:
-			enemy.process_ghost_recovery()
+	pass  # 幽霊の自然回復は廃止。将来的に状態異常処理等を追加
 
 
 func _on_hp_regen() -> void:

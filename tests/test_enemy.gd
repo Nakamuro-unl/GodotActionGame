@@ -83,42 +83,13 @@ func test_ghost_when_value_negative() -> void:
 	assert_int(counter[0]).is_equal(1)
 
 
-# AC-ENM-005: 幽霊は毎ターン数値+1
-func test_ghost_recovery() -> void:
+# AC-ENM-005: 幽霊は自然回復しない（攻撃でのみ数値変動）
+func test_ghost_no_auto_recovery() -> void:
 	_enemy.setup("子狼", 3, 2, 2, ES.AIPattern.CHASE, Vector2i(3, 3))
 	_enemy.apply_value_change(-5)  # value = -2, ghost
-	_enemy.process_ghost_recovery()
-	assert_int(_enemy.value).is_equal(-1)
-
-
-# 幽霊が回復して0になったら撃破
-func test_ghost_recovery_to_zero_defeats() -> void:
-	_enemy.setup("子狼", 3, 2, 2, ES.AIPattern.CHASE, Vector2i(3, 3))
-	_enemy.apply_value_change(-4)  # value = -1, ghost
-	var counter := [0]
-	_enemy.defeated.connect(func() -> void: counter[0] += 1)
-	_enemy.process_ghost_recovery()  # value = 0
-	assert_int(_enemy.value).is_equal(0)
-	assert_int(_enemy.state).is_equal(ES.EnemyState.DEFEATED)
-	assert_int(counter[0]).is_equal(1)
-
-
-# 幽霊が回復して正になったら通常に戻る
-func test_ghost_recovery_to_positive_restores() -> void:
-	_enemy.setup("子狼", 3, 2, 2, ES.AIPattern.CHASE, Vector2i(3, 3))
-	_enemy.apply_value_change(-3)  # value = 0 → defeated
-	# 別のケース: value = -1 からスタート
-	_enemy.setup("子狼", 1, 2, 2, ES.AIPattern.CHASE, Vector2i(3, 3))
-	_enemy.apply_value_change(-2)  # value = -1, ghost
-	_enemy.process_ghost_recovery()  # value = 0 → defeated
-	assert_int(_enemy.state).is_equal(ES.EnemyState.DEFEATED)
-
-
-# 通常状態では回復処理は何もしない
-func test_ghost_recovery_does_nothing_for_normal() -> void:
-	_enemy.setup("子狼", 5, 2, 2, ES.AIPattern.CHASE, Vector2i(3, 3))
-	_enemy.process_ghost_recovery()
-	assert_int(_enemy.value).is_equal(5)
+	_enemy.process_ghost_recovery()  # 何もしない
+	assert_int(_enemy.value).is_equal(-2)
+	assert_int(_enemy.state).is_equal(ES.EnemyState.GHOST)
 
 
 # 数値を直接セットできる（乗除技など）
