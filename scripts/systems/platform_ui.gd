@@ -1,6 +1,6 @@
 extends RefCounted
 
-## プラットフォーム判定とUI設定。
+## プラットフォーム判定、UI設定、画面向き・解像度設定。
 
 enum Platform {
 	PC,
@@ -15,7 +15,7 @@ static func detect_platform() -> Platform:
 	return Platform.PC
 
 
-## プラットフォーム別のUI設定を返す
+## プラットフォーム別のUI表示設定
 static func get_ui_config(platform: Platform) -> Dictionary:
 	match platform:
 		Platform.PC:
@@ -37,6 +37,58 @@ static func get_ui_config(platform: Platform) -> Dictionary:
 				"show_hud_top": true,
 			}
 	return {}
+
+
+## プラットフォーム別の画面解像度設定
+static func get_screen_config(platform: Platform) -> Dictionary:
+	match platform:
+		Platform.PC:
+			return {
+				"width": 640,
+				"height": 480,
+				"camera_zoom": 2.0,
+				"orientation": DisplayServer.SCREEN_LANDSCAPE,
+			}
+		Platform.MOBILE:
+			return {
+				"width": 360,
+				"height": 640,
+				"camera_zoom": 2.5,
+				"orientation": DisplayServer.SCREEN_PORTRAIT,
+			}
+	return {}
+
+
+## プラットフォーム別のHUDレイアウト（各要素のY座標等）
+static func get_hud_layout(platform: Platform) -> Dictionary:
+	match platform:
+		Platform.PC:
+			return {
+				"hud_top_y": 4,
+				"skill_slots_y": 432,
+				"message_log_y": 460,
+				"key_hints_y": 470,
+				"minimap_x": -108,
+				"minimap_y": 24,
+				"minimap_size": 100,
+			}
+		Platform.MOBILE:
+			return {
+				"hud_top_y": 4,
+				"skill_slots_y": 350,
+				"message_log_y": 330,
+				"key_hints_y": -1,  # 非表示
+				"minimap_x": -78,
+				"minimap_y": 22,
+				"minimap_size": 70,
+			}
+	return {}
+
+
+## 画面向きと解像度を適用する
+static func apply_screen_config(platform: Platform) -> void:
+	var config: Dictionary = get_screen_config(platform)
+	DisplayServer.screen_set_orientation(config["orientation"])
 
 
 ## キーボード操作ヒントテキスト

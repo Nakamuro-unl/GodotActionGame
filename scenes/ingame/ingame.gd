@@ -112,12 +112,39 @@ func _ready() -> void:
 
 func _apply_platform_ui() -> void:
 	_platform = PlatformUI.detect_platform()
-	var config: Dictionary = PlatformUI.get_ui_config(_platform)
-	_vpad.visible = config["show_virtual_pad"]
-	$UILayer/SkillSlots.visible = config["show_skill_slots_hud"]
-	$UILayer/KeyHints.visible = config["show_keyboard_hints"]
-	if config["show_keyboard_hints"]:
+	var ui_config: Dictionary = PlatformUI.get_ui_config(_platform)
+	var screen_config: Dictionary = PlatformUI.get_screen_config(_platform)
+	var layout: Dictionary = PlatformUI.get_hud_layout(_platform)
+
+	# 画面向き
+	PlatformUI.apply_screen_config(_platform)
+
+	# ビューポート解像度
+	var vp: Window = get_viewport()
+	if vp:
+		vp.content_scale_size = Vector2i(screen_config["width"], screen_config["height"])
+
+	# カメラzoom
+	$Camera2D.zoom = Vector2(screen_config["camera_zoom"], screen_config["camera_zoom"])
+
+	# UI表示切替
+	_vpad.visible = ui_config["show_virtual_pad"]
+	$UILayer/SkillSlots.visible = ui_config["show_skill_slots_hud"]
+	$UILayer/KeyHints.visible = ui_config["show_keyboard_hints"]
+	if ui_config["show_keyboard_hints"]:
 		$UILayer/KeyHints.text = PlatformUI.get_keyboard_hints()
+
+	# HUDレイアウト適用
+	$UILayer/HUD.offset_top = layout["hud_top_y"]
+	$UILayer/SkillSlots.offset_top = layout["skill_slots_y"]
+	$UILayer/MessageLog.offset_top = layout["message_log_y"]
+
+	# ミニマップ
+	var minimap_rect: TextureRect = $UILayer/Minimap
+	if minimap_rect:
+		minimap_rect.offset_left = layout["minimap_x"]
+		minimap_rect.offset_top = layout["minimap_y"]
+		minimap_rect.custom_minimum_size = Vector2(layout["minimap_size"], layout["minimap_size"])
 
 
 func _process(_delta: float) -> void:
