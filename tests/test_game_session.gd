@@ -127,6 +127,24 @@ func test_adjacent_enemy_attacks_player() -> void:
 	# (敵が隣接していなければダメージなし)
 
 
+# --- 敵の重複防止 ---
+
+func test_enemies_do_not_overlap_after_turn() -> void:
+	if _session.enemies.size() < 2:
+		return
+	# 何ターンか進める
+	for i in 10:
+		_session.try_player_move(Vector2i.DOWN)
+	# 全敵の位置が一意か確認
+	var positions: Dictionary = {}
+	for enemy in _session.enemies:
+		if enemy.state == ES.EnemyState.DEFEATED:
+			continue
+		var pos: Vector2i = enemy.grid_pos
+		assert_bool(positions.has(pos)).is_false()
+		positions[pos] = true
+
+
 # --- 階段 ---
 
 func test_stairs_advance_floor() -> void:

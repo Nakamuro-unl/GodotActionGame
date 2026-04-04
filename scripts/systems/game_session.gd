@@ -232,15 +232,16 @@ func open_chest() -> void:
 # --- 敵フェーズ ---
 
 func _on_enemy_phase() -> void:
-	var occupied: Array[Vector2i] = [player.grid_pos]
-	for e in enemies:
-		if e.state != EnemyScript.EnemyState.DEFEATED:
-			occupied.append(e.grid_pos)
-
 	for enemy in enemies:
 		if enemy.state == EnemyScript.EnemyState.DEFEATED:
 			continue
+		# 移動のたびにoccupiedを再構築（移動済みの敵の新位置を反映）
+		var occupied: Array[Vector2i] = [player.grid_pos]
+		for other in enemies:
+			if other != enemy and other.state != EnemyScript.EnemyState.DEFEATED:
+				occupied.append(other.grid_pos)
 		enemy.decide_move(player.grid_pos, grid, occupied)
+
 		if _is_adjacent(enemy.grid_pos, player.grid_pos):
 			var dmg: int = combat_system.calculate_damage(enemy, player)
 			if dmg > 0:
