@@ -43,6 +43,7 @@ const KNOWLEDGE_DB: Dictionary = {
 	"K-404": {"name": "対数",         "category": "formula",    "stage": 4, "skill_id": "log2",       "field_effect": "control_exponential"},
 	"K-405": {"name": "期待値の定理", "category": "theorem",    "stage": 4,                            "field_effect": "show_optimal_path"},
 	"K-406": {"name": "極限",         "category": "theorem",    "stage": 4, "skill_id": "limit",      "field_effect": "finite_corridor"},
+	"K-407": {"name": "零化写像",     "category": "theorem",    "stage": 4, "skill_id": "zero_mul"},
 	# ステージ5: 宇宙
 	"K-501": {"name": "ベクトル",     "category": "definition", "stage": 5, "passive": "ranged_attack"},
 	"K-502": {"name": "行列",         "category": "formula",    "stage": 5, "skill_id": "zero_vector", "field_effect": "transform_room"},

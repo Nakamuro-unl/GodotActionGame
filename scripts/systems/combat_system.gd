@@ -35,6 +35,8 @@ const SKILLS: Dictionary = {
 	"topology":    {"name": "トポロジー",     "mp_cost": 10, "type": "func", "param": "topology"},
 	"identity":    {"name": "アイデンティティ", "mp_cost": 8, "type": "func", "param": "identity"},
 	"limit":       {"name": "リミット",       "mp_cost": 12, "type": "func", "param": "limit"},
+	# 回数制限付き（ステージ4以降）
+	"zero_mul":    {"name": "ゼロ乗算",     "mp_cost": 0, "type": "mul", "param": 0, "max_uses": 3},
 }
 
 
@@ -47,12 +49,21 @@ func use_skill(skill_id: String, player: Node, enemy: Node) -> Dictionary:
 	var skill: Dictionary = SKILLS[skill_id]
 	var mp_cost: int = skill["mp_cost"]
 
+	# 回数制限チェック
+	if skill.has("max_uses"):
+		if player.get_skill_remaining(skill_id) <= 0:
+			return {"success": false, "mp_cost": 0, "old_value": enemy.value, "new_value": enemy.value}
+
 	if not player.consume_mp(mp_cost):
 		return {"success": false, "mp_cost": mp_cost, "old_value": enemy.value, "new_value": enemy.value}
 
 	var old_value: int = enemy.value
 	var new_value: int = _calculate_skill_effect(skill, enemy.value)
 	enemy.set_value(new_value)
+
+	# 回数制限の消費
+	if skill.has("max_uses"):
+		player.consume_skill_use(skill_id)
 
 	return {"success": true, "mp_cost": mp_cost, "old_value": old_value, "new_value": new_value}
 
@@ -67,6 +78,20 @@ func get_skill_info(skill_id: String) -> Dictionary:
 		"name": skill["name"],
 		"mp_cost": skill["mp_cost"],
 	}
+
+
+## 回数制限付き技か判定
+func is_limited_skill(skill_id: String) -> bool:
+	if not SKILLS.has(skill_id):
+		return false
+	return SKILLS[skill_id].has("max_uses")
+
+
+## 回数制限付き技の最大使用回数
+func get_max_uses(skill_id: String) -> int:
+	if not SKILLS.has(skill_id):
+		return 0
+	return int(SKILLS[skill_id].get("max_uses", 0))
 
 
 ## ダメージ計算（敵→プレイヤー）

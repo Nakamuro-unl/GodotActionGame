@@ -25,8 +25,8 @@ func test_initial_no_knowledge() -> void:
 
 
 func test_all_knowledge_defined() -> void:
-	# 全34知識が定義されている（ステージ1に4つ追加）
-	assert_int(_ks.get_total_count()).is_equal(34)
+	# 全35知識が定義されている
+	assert_int(_ks.get_total_count()).is_equal(35)
 
 
 # --- 獲得 ---

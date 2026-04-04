@@ -23,6 +23,7 @@ var level: int = 1
 var exp: int = 0
 var skill_slots: Array = []
 var items: Array[String] = []
+var _skill_uses: Dictionary = {}  # skill_id -> 残り回数
 
 
 ## 新規ゲーム開始時に呼ぶ（全ステータスリセット）
@@ -99,6 +100,29 @@ func consume_mp(amount: int) -> bool:
 
 func heal_mp(amount: int) -> void:
 	mp = mini(mp + amount, max_mp)
+
+
+# --- 回数制限付き技 ---
+
+## 残り使用回数を取得（制限なしなら999を返す）
+func get_skill_remaining(skill_id: String) -> int:
+	if not _skill_uses.has(skill_id):
+		# 初回: CombatSystemから最大回数を取得して初期化
+		var cs_script: GDScript = load("res://scripts/systems/combat_system.gd")
+		var skills: Dictionary = cs_script.SKILLS
+		if skills.has(skill_id) and skills[skill_id].has("max_uses"):
+			_skill_uses[skill_id] = int(skills[skill_id]["max_uses"])
+			return _skill_uses[skill_id]
+		return 999  # 制限なし
+	return _skill_uses[skill_id]
+
+
+## 使用回数を1消費する
+func consume_skill_use(skill_id: String) -> void:
+	if not _skill_uses.has(skill_id):
+		get_skill_remaining(skill_id)  # 初期化
+	if _skill_uses.has(skill_id):
+		_skill_uses[skill_id] = maxi(_skill_uses[skill_id] - 1, 0)
 
 
 # --- 技スロット ---
