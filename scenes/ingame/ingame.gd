@@ -16,6 +16,7 @@ const ItemMenuScene = preload("res://scenes/ui/item_menu.tscn")
 const ItemSysScript = preload("res://scripts/systems/item_system.gd")
 const InventoryScene = preload("res://scenes/ui/inventory_screen.tscn")
 const SkillSwapScene = preload("res://scenes/ui/skill_swap_dialog.tscn")
+const GameOverScene = preload("res://scenes/ui/game_over_effect.tscn")
 
 var session: Node
 var _facing: Vector2i = Vector2i.DOWN
@@ -26,6 +27,7 @@ var _item_menu: Node = null
 var _item_sys: Node = null
 var _inventory: Node = null
 var _skill_swap: Node = null
+var _game_over_effect: Node = null
 var _renderer: Renderer
 
 
@@ -67,6 +69,10 @@ func _ready() -> void:
 	add_child(_skill_swap)
 	_skill_swap.slot_selected.connect(func(_idx: int) -> void: _update_hud())
 	_skill_swap.cancelled.connect(func() -> void: pass)
+
+	_game_over_effect = GameOverScene.instantiate()
+	add_child(_game_over_effect)
+	_game_over_effect.finished.connect(_on_game_over_finished)
 
 	# セーブデータのロード or 新規ゲーム
 	var gm: Node = get_node_or_null("/root/GameManager")
@@ -295,15 +301,7 @@ func _update_hud() -> void:
 		session.current_floor, session.turn_manager.turn_count, _direction_name(_facing), combo_text
 	]
 
-	var parts: Array[String] = []
-	for i in p.skill_slots.size():
-		var sid = p.skill_slots[i]
-		if sid == null or sid == "":
-			parts.append("[%d]---" % (i + 1))
-		else:
-			var info: Dictionary = session.combat_system.get_skill_info(sid)
-			parts.append("[%d]%s" % [i + 1, info.get("name", sid)])
-	$UILayer/SkillSlots.text = "  ".join(parts)
+	_update_skill_slot_icons(p)
 
 	if _vpad:
 		var vpad_names: Array[String] = []
@@ -314,6 +312,58 @@ func _update_hud() -> void:
 			else:
 				vpad_names.append(session.combat_system.get_skill_info(sid).get("name", sid))
 		_vpad.update_skill_labels(vpad_names)
+
+
+func _update_skill_slot_icons(p: Node) -> void:
+	var container: HBoxContainer = $UILayer/SkillSlots
+	# 既存の子を削除
+	for child in container.get_children():
+		child.queue_free()
+
+	for i in p.skill_slots.size():
+		var sid = p.skill_slots[i]
+		var slot_box: HBoxContainer = HBoxContainer.new()
+		slot_box.add_theme_constant_override("separation", 1)
+
+		if sid == null or sid == "":
+			var lbl: Label = Label.new()
+			lbl.text = "[%d]---" % (i + 1)
+			lbl.add_theme_font_size_override("font_size", 10)
+			lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
+			slot_box.add_child(lbl)
+		else:
+			# アイコン: 知識IDからスプライト名を取得
+			var icon_name: String = _find_skill_icon(sid)
+			if icon_name != "":
+				var icon_path: String = Data.get_icon_path(icon_name)
+				if ResourceLoader.exists(icon_path):
+					var tex_rect: TextureRect = TextureRect.new()
+					tex_rect.texture = load(icon_path)
+					tex_rect.custom_minimum_size = Vector2(16, 16)
+					tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+					tex_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+					slot_box.add_child(tex_rect)
+
+			var info: Dictionary = session.combat_system.get_skill_info(sid)
+			var lbl: Label = Label.new()
+			lbl.text = "[%d]%s" % [i + 1, info.get("name", sid)]
+			lbl.add_theme_font_size_override("font_size", 10)
+			# MP不足ならグレーアウト
+			var mp_cost: int = int(info.get("mp_cost", 0))
+			if p.mp < mp_cost:
+				lbl.add_theme_color_override("font_color", Color(0.4, 0.4, 0.4))
+			slot_box.add_child(lbl)
+
+		container.add_child(slot_box)
+
+
+func _find_skill_icon(skill_id: String) -> String:
+	## スキルIDに対応する知識のアイコンを探す
+	for kid in Data.KNOWLEDGE_ICON_MAP:
+		var info: Dictionary = session.knowledge_system.get_info(kid)
+		if not info.is_empty() and info.get("skill_id", "") == skill_id:
+			return Data.KNOWLEDGE_ICON_MAP[kid]
+	return ""
 
 
 # --- メッセージログ ---
@@ -333,8 +383,10 @@ func _on_message(text: String) -> void:
 # --- イベント ---
 
 func _on_game_over() -> void:
-	_add_message("GAME OVER")
-	await get_tree().create_timer(1.5).timeout
+	_game_over_effect.play()
+
+
+func _on_game_over_finished() -> void:
 	var gm: Node = get_node_or_null("/root/GameManager")
 	if gm:
 		gm.change_state(GMS.State.RESULT)
