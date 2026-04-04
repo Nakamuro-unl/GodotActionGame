@@ -11,12 +11,16 @@ const SaveMgrScript = preload("res://scripts/systems/save_manager.gd")
 const PopupScene = preload("res://scenes/ui/popup_display.tscn")
 const Renderer = preload("res://scenes/ingame/ingame_renderer.gd")
 const Data = preload("res://scenes/ingame/ingame_data.gd")
+const ItemMenuScene = preload("res://scenes/ui/item_menu.tscn")
+const ItemSysScript = preload("res://scripts/systems/item_system.gd")
 
 var session: Node
 var _facing: Vector2i = Vector2i.DOWN
 var _is_animating: bool = false
 var _vpad: Node = null
 var _popup: Node = null
+var _item_menu: Node = null
+var _item_sys: Node = null
 var _renderer: Renderer
 
 
@@ -41,6 +45,13 @@ func _ready() -> void:
 
 	_popup = PopupScene.instantiate()
 	add_child(_popup)
+
+	_item_menu = ItemMenuScene.instantiate()
+	add_child(_item_menu)
+	_item_menu.item_selected.connect(_on_item_selected)
+
+	_item_sys = ItemSysScript.new()
+	add_child(_item_sys)
 
 	# セーブデータのロード or 新規ゲーム
 	var gm: Node = get_node_or_null("/root/GameManager")
@@ -79,6 +90,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if _popup and _popup.is_showing():
 		return
+	if _item_menu and _item_menu.is_showing():
+		return
 
 	if event is InputEventKey and event.pressed and event.shift_pressed:
 		if event.keycode == KEY_UP or event.keycode == KEY_W:
@@ -106,6 +119,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			_do_wait()
 		elif key == KEY_ENTER or key == KEY_KP_ENTER:
 			_do_interact()
+		elif key == KEY_I:
+			_open_item_menu()
 
 
 func _turn_facing(direction: Vector2i) -> void:
@@ -233,6 +248,30 @@ func _show_item_popup(item_id: String) -> void:
 	var desc_str: String = Data.ITEM_DESCS.get(item_id, "")
 	var icon_name: String = Data.ITEM_ICON_MAP.get(item_id, "")
 	_popup.show_item(name_str, desc_str, Data.get_icon_path(icon_name))
+
+
+# --- アイテムメニュー ---
+
+func _open_item_menu() -> void:
+	if session.player.items.is_empty():
+		_add_message("アイテムを持っていない")
+		return
+	_item_menu.show_menu(session.player.items)
+
+
+func _on_item_selected(index: int) -> void:
+	# 向き方向の隣接敵を探す（戦闘補助用）
+	var target_pos: Vector2i = session.player.grid_pos + _facing
+	var target_enemy: Node = session._get_enemy_at(target_pos)
+
+	var result: Dictionary = _item_sys.use_item(session.player, index, target_enemy)
+	if result["success"]:
+		_add_message(result["message"])
+		session.score_system.register_turn()
+		session.turn_manager.execute_player_action()
+		_after_turn_animated()
+	else:
+		_add_message(result.get("message", "使用できない"))
 
 
 # --- HUD ---
