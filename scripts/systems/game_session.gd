@@ -15,6 +15,7 @@ const CombatSys = preload("res://scripts/systems/combat_system.gd")
 const ScoreSys = preload("res://scripts/systems/score_system.gd")
 const KnowledgeSys = preload("res://scripts/systems/knowledge_system.gd")
 const GimmickSys = preload("res://scripts/systems/gimmick_system.gd")
+const MinimapData = preload("res://scripts/systems/minimap_data.gd")
 const PlayerScript = preload("res://scripts/entities/player.gd")
 const EnemyScript = preload("res://scripts/entities/enemy.gd")
 const FloorBuilder = preload("res://scripts/systems/floor_builder.gd")
@@ -31,6 +32,7 @@ var score_system: Node
 var knowledge_system: Node
 var gimmick_system: Node
 var drop_table: Node
+var minimap: Node
 var player: Node
 var enemies: Array = []
 var grid: Array = []
@@ -69,8 +71,10 @@ func _init_systems() -> void:
 	add_child(score_system)
 	add_child(knowledge_system)
 	drop_table = DropTableScript.new()
+	minimap = MinimapData.new()
 	add_child(gimmick_system)
 	add_child(drop_table)
+	add_child(minimap)
 
 	turn_manager.enemy_phase_started.connect(_on_enemy_phase)
 	turn_manager.environment_phase_started.connect(_on_environment_phase)
@@ -98,6 +102,8 @@ func _generate_floor() -> void:
 	_floor_builder.spawn_enemies(self, current_stage, is_boss_floor)
 	_floor_builder.place_chests(self, current_stage, current_floor == 1)
 	_floor_builder.place_gimmicks(self, current_stage)
+	minimap.init_floor(MapGen.GRID_WIDTH, MapGen.GRID_HEIGHT)
+	minimap.explore_around(player.grid_pos, 4)
 	floor_changed.emit(current_floor, current_stage)
 
 
@@ -111,6 +117,7 @@ func try_player_move(direction: Vector2i) -> bool:
 		return false
 	var moved: bool = player.try_move(direction, grid)
 	if moved:
+		minimap.explore_around(player.grid_pos, 4)
 		score_system.register_turn()
 		turn_manager.execute_player_action()
 		return true

@@ -75,6 +75,7 @@ func _ready() -> void:
 	_renderer.rebuild_map(session.grid)
 	_renderer.update_entities_immediate(session.player.grid_pos, session.enemies, $Camera2D)
 	_update_hud()
+	_update_minimap()
 	if loaded:
 		_add_message("セーブデータをロードしました (%dF)" % session.current_floor)
 	else:
@@ -214,6 +215,7 @@ func _after_turn_animated() -> void:
 	tween.tween_callback(func() -> void:
 		_is_animating = false
 		_renderer.update_enemy_visuals(session.enemies)
+		_update_minimap()
 	)
 
 
@@ -225,6 +227,14 @@ func _show_knowledge_popup(knowledge_id: String) -> void:
 
 func _show_item_popup(item_id: String) -> void:
 	Actions.show_item_popup(_popup, item_id)
+
+
+# --- ミニマップ ---
+
+func _update_minimap() -> void:
+	var minimap_rect: TextureRect = $UILayer/Minimap
+	if minimap_rect:
+		_renderer.render_minimap(session.grid, session.minimap, session.player.grid_pos, session.enemies, minimap_rect)
 
 
 # --- インベントリ ---

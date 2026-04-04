@@ -187,6 +187,45 @@ func update_enemy_visuals(enemies: Array) -> void:
 				lbl.add_theme_color_override("font_color", Color.WHITE)
 
 
+## ミニマップをColorRectとして描画し、Imageテクスチャに書き込む
+func render_minimap(grid: Array, minimap_data: Node, player_pos: Vector2i, enemies: Array, texture_rect: TextureRect) -> void:
+	var w: int = grid[0].size()
+	var h: int = grid.size()
+	var img: Image = Image.create(w, h, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0.8))
+
+	for y in h:
+		for x in w:
+			var pos: Vector2i = Vector2i(x, y)
+			if not minimap_data.is_explored(pos):
+				continue
+			var tile: int = grid[y][x]
+			match tile:
+				0:  # WALL
+					img.set_pixel(x, y, Color(0.35, 0.35, 0.4, 1.0))
+				1, 2:  # FLOOR, CORRIDOR
+					img.set_pixel(x, y, Color(0.55, 0.47, 0.37, 1.0))
+				3:  # STAIRS
+					img.set_pixel(x, y, Color(1.0, 1.0, 0.4, 1.0))
+				4:  # CHEST
+					img.set_pixel(x, y, Color(0.9, 0.7, 0.2, 1.0))
+
+	# 敵の位置
+	for enemy in enemies:
+		if enemy.state != EnemyScript.EnemyState.DEFEATED:
+			if minimap_data.is_explored(enemy.grid_pos):
+				var ep: Vector2i = enemy.grid_pos
+				if ep.x >= 0 and ep.x < w and ep.y >= 0 and ep.y < h:
+					img.set_pixel(ep.x, ep.y, Color(0.9, 0.2, 0.2, 1.0))
+
+	# プレイヤーの位置
+	if player_pos.x >= 0 and player_pos.x < w and player_pos.y >= 0 and player_pos.y < h:
+		img.set_pixel(player_pos.x, player_pos.y, Color(0.2, 0.5, 1.0, 1.0))
+
+	var tex: ImageTexture = ImageTexture.create_from_image(img)
+	texture_rect.texture = tex
+
+
 func _get_boss_texture(enemy: Node) -> Texture2D:
 	for stage in EnemyScript.BOSS_DATA:
 		if EnemyScript.BOSS_DATA[stage]["name"] == enemy.enemy_name:
