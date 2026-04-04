@@ -18,6 +18,7 @@ const GimmickSys = preload("res://scripts/systems/gimmick_system.gd")
 const PlayerScript = preload("res://scripts/entities/player.gd")
 const EnemyScript = preload("res://scripts/entities/enemy.gd")
 const FloorBuilder = preload("res://scripts/systems/floor_builder.gd")
+const DropTableScript = preload("res://scripts/systems/drop_table.gd")
 const SaveMgr = preload("res://scripts/systems/save_manager.gd")
 
 const FLOORS_PER_STAGE: int = 5
@@ -29,6 +30,7 @@ var combat_system: Node
 var score_system: Node
 var knowledge_system: Node
 var gimmick_system: Node
+var drop_table: Node
 var player: Node
 var enemies: Array = []
 var grid: Array = []
@@ -65,14 +67,16 @@ func _init_systems() -> void:
 	add_child(combat_system)
 	add_child(score_system)
 	add_child(knowledge_system)
+	drop_table = DropTableScript.new()
 	add_child(gimmick_system)
+	add_child(drop_table)
 
 	turn_manager.enemy_phase_started.connect(_on_enemy_phase)
 	turn_manager.environment_phase_started.connect(_on_environment_phase)
 	turn_manager.hp_regen_triggered.connect(_on_hp_regen)
 
 	_floor_builder = FloorBuilder.new()
-	_floor_builder.setup(_rng)
+	_floor_builder.setup(_rng, drop_table)
 
 
 func _init_player() -> void:
@@ -171,17 +175,24 @@ func _open_chest_at(pos: Vector2i) -> Dictionary:
 	chest_positions.erase(pos)
 	grid[pos.y][pos.x] = MapGen.Tile.FLOOR
 
-	var knowledge_id: String = knowledge_system.get_random_unobtained(current_stage)
-	if knowledge_id != "":
-		knowledge_system.acquire(knowledge_id)
-		score_system.register_knowledge()
-		var info: Dictionary = knowledge_system.get_info(knowledge_id)
-		message.emit("宝箱から「%s」を手に入れた!" % info["name"])
-		return {"type": "chest_knowledge", "knowledge_id": knowledge_id, "name": info["name"]}
-	else:
-		player.add_item("herb")
-		message.emit("宝箱から薬草を手に入れた!")
-		return {"type": "chest_item", "item_id": "herb"}
+	var has_unobtained: bool = knowledge_system.get_random_unobtained(current_stage) != ""
+	var roll: String = drop_table.roll_chest_type(has_unobtained)
+
+	if roll == "knowledge":
+		var knowledge_id: String = knowledge_system.get_random_unobtained(current_stage)
+		if knowledge_id != "":
+			knowledge_system.acquire(knowledge_id)
+			score_system.register_knowledge()
+			var info: Dictionary = knowledge_system.get_info(knowledge_id)
+			message.emit("宝箱から「%s」を手に入れた!" % info["name"])
+			return {"type": "chest_knowledge", "knowledge_id": knowledge_id, "name": info["name"]}
+
+	# アイテム抽選
+	var item: Dictionary = drop_table.pick_item(current_stage)
+	var item_id: String = str(item["id"])
+	player.add_item(item_id)
+	message.emit("宝箱からアイテムを手に入れた!")
+	return {"type": "chest_item", "item_id": item_id}
 
 
 func _try_resolve_gimmick(pos: Vector2i) -> Dictionary:

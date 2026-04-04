@@ -1,6 +1,7 @@
 extends RefCounted
 
 ## フロアの生成（敵・宝箱・ギミック配置）を担当する。
+## 敵の出現はDropTableの重み付き抽選を使用する。
 
 const MapGen = preload("res://scripts/systems/map_generator.gd")
 const GimmickSys = preload("res://scripts/systems/gimmick_system.gd")
@@ -8,10 +9,12 @@ const EnemyScript = preload("res://scripts/entities/enemy.gd")
 const SessionData = preload("res://scripts/systems/game_session_data.gd")
 
 var _rng: RandomNumberGenerator
+var _drop_table: Node
 
 
-func setup(rng: RandomNumberGenerator) -> void:
+func setup(rng: RandomNumberGenerator, drop_table: Node) -> void:
 	_rng = rng
+	_drop_table = drop_table
 
 
 func spawn_enemies(session: Node, stage: int) -> void:
@@ -20,19 +23,18 @@ func spawn_enemies(session: Node, stage: int) -> void:
 			e.queue_free()
 	session.enemies.clear()
 
-	var stage_data: Array = SessionData.STAGE_ENEMIES.get(stage, SessionData.STAGE_ENEMIES[1])
 	var count_range: Vector2i = SessionData.STAGE_ENEMY_COUNT.get(stage, Vector2i(3, 5))
 	var count: int = _rng.randi_range(count_range.x, count_range.y)
 	var rooms: Array = session.map_generator.get_rooms()
 
 	for i in count:
-		var template: Array = stage_data[_rng.randi_range(0, stage_data.size() - 1)]
-		var value: int = _rng.randi_range(template[1], template[2])
+		var template: Dictionary = _drop_table.pick_enemy_template(stage)
+		var value: int = _rng.randi_range(int(template["value_min"]), int(template["value_max"]))
 		var pos: Vector2i = _get_random_floor_pos(rooms, session)
 
 		var enemy: Node = EnemyScript.new()
 		session.add_child(enemy)
-		enemy.setup(template[0], value, template[3], template[4], template[5], pos)
+		enemy.setup(str(template["name"]), value, int(template["attack"]), int(template["exp"]), int(template["ai"]), pos)
 		enemy.defeated.connect(session._on_enemy_defeated.bind(enemy))
 		enemy.ghostified.connect(session._on_enemy_ghostified)
 		session.enemies.append(enemy)
