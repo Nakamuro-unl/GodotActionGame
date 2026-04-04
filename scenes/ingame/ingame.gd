@@ -11,8 +11,10 @@ const SaveMgrScript = preload("res://scripts/systems/save_manager.gd")
 const PopupScene = preload("res://scenes/ui/popup_display.tscn")
 const Renderer = preload("res://scenes/ingame/ingame_renderer.gd")
 const Data = preload("res://scenes/ingame/ingame_data.gd")
+const Actions = preload("res://scenes/ingame/ingame_actions.gd")
 const ItemMenuScene = preload("res://scenes/ui/item_menu.tscn")
 const ItemSysScript = preload("res://scripts/systems/item_system.gd")
+const InventoryScene = preload("res://scenes/ui/inventory_screen.tscn")
 
 var session: Node
 var _facing: Vector2i = Vector2i.DOWN
@@ -21,6 +23,7 @@ var _vpad: Node = null
 var _popup: Node = null
 var _item_menu: Node = null
 var _item_sys: Node = null
+var _inventory: Node = null
 var _renderer: Renderer
 
 
@@ -52,6 +55,10 @@ func _ready() -> void:
 
 	_item_sys = ItemSysScript.new()
 	add_child(_item_sys)
+
+	_inventory = InventoryScene.instantiate()
+	add_child(_inventory)
+	_inventory.closed.connect(_on_inventory_closed)
 
 	# セーブデータのロード or 新規ゲーム
 	var gm: Node = get_node_or_null("/root/GameManager")
@@ -92,6 +99,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if _item_menu and _item_menu.is_showing():
 		return
+	if _inventory and _inventory.is_showing():
+		return
 
 	if event is InputEventKey and event.pressed and event.shift_pressed:
 		if event.keycode == KEY_UP or event.keycode == KEY_W:
@@ -121,6 +130,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			_do_interact()
 		elif key == KEY_I:
 			_open_item_menu()
+		elif key == KEY_ESCAPE:
+			_open_inventory()
 
 
 func _turn_facing(direction: Vector2i) -> void:
@@ -198,24 +209,7 @@ func _after_turn_animated() -> void:
 	_update_hud()
 
 	_is_animating = true
-	var tween: Tween = create_tween()
-	tween.set_parallel(true)
-
-	var p_target: Vector2 = _renderer.grid_to_world(session.player.grid_pos)
-	tween.tween_property(_renderer.player_sprite, "position", p_target, Renderer.MOVE_DURATION).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
-	tween.tween_property($Camera2D, "position", p_target, Renderer.MOVE_DURATION).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
-
-	for enemy in session.enemies:
-		if enemy.state == EnemyScript.EnemyState.DEFEATED:
-			continue
-		var e_target: Vector2 = _renderer.grid_to_world(enemy.grid_pos)
-		var lbl_target: Vector2 = Vector2(enemy.grid_pos.x * Renderer.TILE_SIZE - 12, enemy.grid_pos.y * Renderer.TILE_SIZE - 14)
-		if _renderer.enemy_sprites.has(enemy):
-			tween.tween_property(_renderer.enemy_sprites[enemy], "position", e_target, Renderer.MOVE_DURATION).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
-		if _renderer.enemy_labels.has(enemy):
-			_renderer.enemy_labels[enemy].text = str(enemy.value)
-			tween.tween_property(_renderer.enemy_labels[enemy], "position", lbl_target, Renderer.MOVE_DURATION).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
-
+	var tween: Tween = _renderer.animate_turn(session.enemies, session.player.grid_pos, $Camera2D, self)
 	tween.set_parallel(false)
 	tween.tween_callback(func() -> void:
 		_is_animating = false
@@ -226,28 +220,21 @@ func _after_turn_animated() -> void:
 # --- ポップアップ ---
 
 func _show_knowledge_popup(knowledge_id: String) -> void:
-	if _popup == null or knowledge_id == "":
-		return
-	var info: Dictionary = session.knowledge_system.get_info(knowledge_id)
-	if info.is_empty():
-		return
-	var skill_desc: String = ""
-	if info.has("skill_id") and info["skill_id"] != "":
-		var skill_info: Dictionary = session.combat_system.get_skill_info(info["skill_id"])
-		if not skill_info.is_empty():
-			skill_desc = skill_info["name"]
-	var field_desc: String = info.get("field_effect", "")
-	var icon_name: String = Data.KNOWLEDGE_ICON_MAP.get(knowledge_id, "")
-	_popup.show_knowledge(info["name"], info["category"], skill_desc, field_desc, Data.get_icon_path(icon_name))
+	Actions.show_knowledge_popup(_popup, session, knowledge_id)
 
 
 func _show_item_popup(item_id: String) -> void:
-	if _popup == null or item_id == "":
-		return
-	var name_str: String = Data.ITEM_NAMES.get(item_id, item_id)
-	var desc_str: String = Data.ITEM_DESCS.get(item_id, "")
-	var icon_name: String = Data.ITEM_ICON_MAP.get(item_id, "")
-	_popup.show_item(name_str, desc_str, Data.get_icon_path(icon_name))
+	Actions.show_item_popup(_popup, item_id)
+
+
+# --- インベントリ ---
+
+func _open_inventory() -> void:
+	_inventory.show_inventory(session.player, session.knowledge_system)
+
+
+func _on_inventory_closed() -> void:
+	_update_hud()
 
 
 # --- アイテムメニュー ---
@@ -260,11 +247,7 @@ func _open_item_menu() -> void:
 
 
 func _on_item_selected(index: int) -> void:
-	# 向き方向の隣接敵を探す（戦闘補助用）
-	var target_pos: Vector2i = session.player.grid_pos + _facing
-	var target_enemy: Node = session._get_enemy_at(target_pos)
-
-	var result: Dictionary = _item_sys.use_item(session.player, index, target_enemy)
+	var result: Dictionary = Actions.use_item(_item_sys, session, index, _facing)
 	if result["success"]:
 		_add_message(result["message"])
 		session.score_system.register_turn()

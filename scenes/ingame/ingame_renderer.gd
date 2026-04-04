@@ -195,6 +195,29 @@ func _get_boss_texture(enemy: Node) -> Texture2D:
 	return tex_enemy_normal
 
 
+## Tweenアニメーションでエンティティを滑らかに移動
+func animate_turn(enemies: Array, player_pos: Vector2i, camera: Camera2D, owner_node: Node) -> Tween:
+	var tween: Tween = owner_node.create_tween()
+	tween.set_parallel(true)
+
+	var p_target: Vector2 = grid_to_world(player_pos)
+	tween.tween_property(player_sprite, "position", p_target, MOVE_DURATION).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+	tween.tween_property(camera, "position", p_target, MOVE_DURATION).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+
+	for enemy in enemies:
+		if enemy.state == EnemyScript.EnemyState.DEFEATED:
+			continue
+		var e_target: Vector2 = grid_to_world(enemy.grid_pos)
+		var lbl_target: Vector2 = Vector2(enemy.grid_pos.x * TILE_SIZE - 12, enemy.grid_pos.y * TILE_SIZE - 14)
+		if enemy_sprites.has(enemy):
+			tween.tween_property(enemy_sprites[enemy], "position", e_target, MOVE_DURATION).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+		if enemy_labels.has(enemy):
+			enemy_labels[enemy].text = str(enemy.value)
+			tween.tween_property(enemy_labels[enemy], "position", lbl_target, MOVE_DURATION).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+
+	return tween
+
+
 func _create_enemy_sprite(enemy: Node) -> void:
 	var spr: Sprite2D = Sprite2D.new()
 	spr.texture = tex_enemy_normal
