@@ -94,7 +94,8 @@ func _generate_floor() -> void:
 	player.setup(grid, map_generator.get_player_start())
 
 	_start_chest_pos = Vector2i(-1, -1)
-	_floor_builder.spawn_enemies(self, current_stage)
+	var is_boss_floor: bool = current_floor % FLOORS_PER_STAGE == 0
+	_floor_builder.spawn_enemies(self, current_stage, is_boss_floor)
 	_floor_builder.place_chests(self, current_stage, current_floor == 1)
 	_floor_builder.place_gimmicks(self, current_stage)
 	floor_changed.emit(current_floor, current_stage)
@@ -260,11 +261,26 @@ func _on_player_dead() -> void:
 func _on_enemy_defeated(enemy: Node) -> void:
 	score_system.register_kill(enemy.exp_reward)
 	player.gain_exp(enemy.exp_reward)
+
+	# ボス撃破: 定理を確定ドロップ
+	if enemy.ai_pattern == EnemyScript.AIPattern.BOSS:
+		score_system.register_boss_kill(0)  # exp は既に register_kill で加算済み
+		_drop_boss_theorem()
+
 	if enemy.value == 0:
 		score_system.register_perfect_kill()
 		message.emit("%s を倒した! コンボ x%d!" % [enemy.enemy_name, score_system.combo_count])
 	else:
 		message.emit("%s を倒した!" % enemy.enemy_name)
+
+
+func _drop_boss_theorem() -> void:
+	if not EnemyScript.BOSS_DATA.has(current_stage):
+		return
+	var theorem_id: String = str(EnemyScript.BOSS_DATA[current_stage]["theorem_id"])
+	if theorem_id != "" and not knowledge_system.is_acquired(theorem_id):
+		_acquire_knowledge(theorem_id)
+		message.emit("ボスから定理を手に入れた!")
 
 
 func _on_enemy_ghostified() -> void:

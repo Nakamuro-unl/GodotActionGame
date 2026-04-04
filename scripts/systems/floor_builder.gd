@@ -17,15 +17,23 @@ func setup(rng: RandomNumberGenerator, drop_table: Node) -> void:
 	_drop_table = drop_table
 
 
-func spawn_enemies(session: Node, stage: int) -> void:
+func spawn_enemies(session: Node, stage: int, is_boss_floor: bool = false) -> void:
 	for e in session.enemies:
 		if is_instance_valid(e):
 			e.queue_free()
 	session.enemies.clear()
 
+	var rooms: Array = session.map_generator.get_rooms()
+
+	# ボスフロア: ボスを配置
+	if is_boss_floor and EnemyScript.BOSS_DATA.has(stage):
+		_spawn_boss(session, stage, rooms)
+
+	# 通常敵を配置
 	var count_range: Vector2i = SessionData.STAGE_ENEMY_COUNT.get(stage, Vector2i(3, 5))
 	var count: int = _rng.randi_range(count_range.x, count_range.y)
-	var rooms: Array = session.map_generator.get_rooms()
+	if is_boss_floor:
+		count = maxi(count - 2, 1)  # ボスフロアは通常敵を減らす
 
 	for i in count:
 		var template: Dictionary = _drop_table.pick_enemy_template(stage)
@@ -38,6 +46,23 @@ func spawn_enemies(session: Node, stage: int) -> void:
 		enemy.defeated.connect(session._on_enemy_defeated.bind(enemy))
 		enemy.ghostified.connect(session._on_enemy_ghostified)
 		session.enemies.append(enemy)
+
+
+func _spawn_boss(session: Node, stage: int, rooms: Array) -> void:
+	var data: Dictionary = EnemyScript.BOSS_DATA[stage]
+	# ボスは階段がある部屋（最も遠い部屋）に配置
+	var stairs_pos: Vector2i = session.map_generator.get_stairs_position()
+	var boss_pos: Vector2i = Vector2i(stairs_pos.x + 1, stairs_pos.y)
+	# 有効な位置か確認、ダメなら近くの床タイルを探す
+	if boss_pos.x >= MapGen.GRID_WIDTH - 1 or session.grid[boss_pos.y][boss_pos.x] == MapGen.Tile.WALL:
+		boss_pos = _get_random_floor_pos(rooms, session)
+
+	var boss: Node = EnemyScript.new()
+	session.add_child(boss)
+	boss.setup(str(data["name"]), int(data["value"]), int(data["attack"]), int(data["exp"]), EnemyScript.AIPattern.BOSS, boss_pos)
+	boss.defeated.connect(session._on_enemy_defeated.bind(boss))
+	boss.ghostified.connect(session._on_enemy_ghostified)
+	session.enemies.append(boss)
 
 
 func place_chests(session: Node, stage: int, is_first_floor: bool = false) -> void:

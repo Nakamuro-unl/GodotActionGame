@@ -28,6 +28,15 @@ enum AIPattern {
 	BOSS,          # ボスAI
 }
 
+## ボスデータ: ステージ -> {name, value, attack, exp, theorem_id}
+const BOSS_DATA: Dictionary = {
+	1: {"name": "原始の王",   "value": 10,  "attack": 8,  "exp": 30,  "theorem_id": "K-104"},
+	2: {"name": "スフィンクス", "value": 24,  "attack": 12, "exp": 60,  "theorem_id": "K-205"},
+	3: {"name": "魔王",       "value": 49,  "attack": 18, "exp": 120, "theorem_id": "K-305"},
+	4: {"name": "計算機械",   "value": 100, "attack": 22, "exp": 200, "theorem_id": "K-405"},
+	5: {"name": "宇宙神",     "value": 256, "attack": 30, "exp": 500, "theorem_id": "K-504"},
+}
+
 ## ステージ別数値範囲: [min, max]
 const VALUE_RANGES: Dictionary = {
 	1: Vector2i(1, 10),
@@ -45,6 +54,7 @@ var ai_pattern: AIPattern = AIPattern.CHASE
 var state: EnemyState = EnemyState.NORMAL
 var grid_pos: Vector2i = Vector2i.ZERO
 var _turn_counter: int = 0
+var _initial_value: int = 0  # ボス用: 初期数値を記録
 
 static var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
@@ -52,6 +62,7 @@ static var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 func setup(p_name: String, p_value: int, p_attack: int, p_exp: int, p_ai: AIPattern, p_pos: Vector2i) -> void:
 	enemy_name = p_name
 	value = p_value
+	_initial_value = p_value
 	attack_power = p_attack
 	exp_reward = p_exp
 	ai_pattern = p_ai
@@ -99,6 +110,10 @@ func process_ghost_recovery() -> void:
 func get_attack_damage() -> int:
 	if state == EnemyState.GHOST or state == EnemyState.DEFEATED:
 		return 0
+	# ボス: 数値が初期値の半分以下で攻撃力1.5倍
+	if ai_pattern == AIPattern.BOSS and _initial_value > 0:
+		if value <= _initial_value / 2:
+			return int(attack_power * 1.5)
 	return attack_power
 
 

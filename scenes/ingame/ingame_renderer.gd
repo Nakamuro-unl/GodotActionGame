@@ -19,6 +19,7 @@ var tex_player_left: Texture2D
 var tex_player_right: Texture2D
 var tex_enemy_normal: Texture2D
 var tex_enemy_ghost: Texture2D
+var tex_bosses: Dictionary = {}  # stage -> Texture2D
 
 var player_sprite: Sprite2D
 var enemy_sprites: Dictionary = {}
@@ -44,6 +45,10 @@ func _load_textures() -> void:
 	tex_player_right = load("res://assets/sprites/player_right.png")
 	tex_enemy_normal = load("res://assets/sprites/enemy_normal.png")
 	tex_enemy_ghost = load("res://assets/sprites/enemy_ghost.png")
+	for i in range(1, 6):
+		var path: String = "res://assets/sprites/boss_stage%d.png" % i
+		if ResourceLoader.exists(path):
+			tex_bosses[i] = load(path)
 
 
 func _setup_tile_map() -> void:
@@ -167,6 +172,8 @@ func update_enemy_visuals(enemies: Array) -> void:
 
 		if enemy.state == EnemyScript.EnemyState.GHOST:
 			spr.texture = tex_enemy_ghost
+		elif enemy.ai_pattern == EnemyScript.AIPattern.BOSS:
+			spr.texture = _get_boss_texture(enemy)
 		else:
 			spr.texture = tex_enemy_normal
 
@@ -178,6 +185,14 @@ func update_enemy_visuals(enemies: Array) -> void:
 				lbl.add_theme_color_override("font_color", Color(0.7, 0.3, 0.9))
 			else:
 				lbl.add_theme_color_override("font_color", Color.WHITE)
+
+
+func _get_boss_texture(enemy: Node) -> Texture2D:
+	for stage in EnemyScript.BOSS_DATA:
+		if EnemyScript.BOSS_DATA[stage]["name"] == enemy.enemy_name:
+			if tex_bosses.has(stage):
+				return tex_bosses[stage]
+	return tex_enemy_normal
 
 
 func _create_enemy_sprite(enemy: Node) -> void:
