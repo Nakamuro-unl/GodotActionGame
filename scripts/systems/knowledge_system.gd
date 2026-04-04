@@ -13,11 +13,15 @@ signal knowledge_acquired(id: String)
 const KNOWLEDGE_DB: Dictionary = {
 	# ステージ1: 石器時代
 	"K-101": {"name": "自然数の定義",  "category": "definition", "stage": 1, "passive": "show_enemy_values"},
-	"K-102": {"name": "加法",         "category": "formula",    "stage": 1, "skill_id": "plus_3",   "field_effect": "add_weight"},
-	"K-103": {"name": "減法",         "category": "formula",    "stage": 1, "skill_id": "minus_5",  "field_effect": "sub_weight"},
+	"K-102": {"name": "加法",         "category": "formula",    "stage": 1, "skill_id": "plus_1",   "field_effect": "add_weight"},
+	"K-103": {"name": "減法",         "category": "formula",    "stage": 1, "skill_id": "minus_1",  "field_effect": "sub_weight"},
 	"K-104": {"name": "零の発見",     "category": "theorem",    "stage": 1, "field_effect": "void_wall_pass"},
 	"K-105": {"name": "負の数",       "category": "definition", "stage": 1, "passive": "ghost_skill_enable", "field_effect": "ice_melt"},
 	"K-106": {"name": "数直線",       "category": "definition", "stage": 1, "passive": "show_value_color",   "field_effect": "show_hidden_path"},
+	"K-107": {"name": "繰り上がり",   "category": "formula",    "stage": 1, "skill_id": "plus_3"},
+	"K-108": {"name": "繰り下がり",   "category": "formula",    "stage": 1, "skill_id": "minus_5"},
+	"K-109": {"name": "十進法",       "category": "formula",    "stage": 1, "skill_id": "plus_10"},
+	"K-110": {"name": "補数",         "category": "formula",    "stage": 1, "skill_id": "minus_10"},
 	# ステージ2: 古代文明
 	"K-201": {"name": "乗法",         "category": "formula",    "stage": 2, "skill_id": "double",   "field_effect": "multiply_object"},
 	"K-202": {"name": "除法",         "category": "formula",    "stage": 2, "skill_id": "half",     "field_effect": "divide_object"},

@@ -116,7 +116,7 @@ func test_acquired_knowledge_appears_in_equippable() -> void:
 	_session.knowledge_system.acquire("K-102")  # 加法
 	var skills: Array = _session.knowledge_system.get_equippable_skills()
 	assert_bool(skills.size() > 0).is_true()
-	assert_str(skills[0]["skill_id"]).is_equal("plus_3")
+	assert_str(skills[0]["skill_id"]).is_equal("plus_1")
 
 
 # 複数知識獲得で複数技が使用可能

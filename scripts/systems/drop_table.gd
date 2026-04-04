@@ -131,9 +131,9 @@ func _build_default_config() -> Dictionary:
 func _default_enemy_tables() -> Dictionary:
 	return {
 		"1": [
-			{"id": "wolf",  "name": "子狼", "value_min": 1, "value_max": 3, "attack": 2, "exp": 2, "ai": EnemyScript.AIPattern.CHASE, "weight": 50, "min_stage": 1},
-			{"id": "boar",  "name": "猪",   "value_min": 3, "value_max": 6, "attack": 3, "exp": 4, "ai": EnemyScript.AIPattern.CHARGE, "weight": 30, "min_stage": 1},
-			{"id": "bear",  "name": "熊",   "value_min": 5, "value_max": 10, "attack": 5, "exp": 8, "ai": EnemyScript.AIPattern.CHASE, "weight": 20, "min_stage": 1},
+			{"id": "wolf",  "name": "子狼", "value_min": 1, "value_max": 2, "attack": 1, "exp": 2, "ai": EnemyScript.AIPattern.CHASE, "weight": 55, "min_stage": 1},
+			{"id": "boar",  "name": "猪",   "value_min": 2, "value_max": 4, "attack": 2, "exp": 4, "ai": EnemyScript.AIPattern.CHARGE, "weight": 30, "min_stage": 1},
+			{"id": "bear",  "name": "熊",   "value_min": 4, "value_max": 8, "attack": 3, "exp": 8, "ai": EnemyScript.AIPattern.CHASE, "weight": 15, "min_stage": 1},
 		],
 		"2": [
 			{"id": "scorpion", "name": "サソリ",   "value_min": 5,  "value_max": 12, "attack": 4,  "exp": 6,  "ai": EnemyScript.AIPattern.CHASE,  "weight": 40, "min_stage": 2},

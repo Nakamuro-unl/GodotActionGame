@@ -25,8 +25,8 @@ func test_initial_no_knowledge() -> void:
 
 
 func test_all_knowledge_defined() -> void:
-	# 全30知識が定義されている
-	assert_int(_ks.get_total_count()).is_equal(30)
+	# 全34知識が定義されている（ステージ1に4つ追加）
+	assert_int(_ks.get_total_count()).is_equal(34)
 
 
 # --- 獲得 ---
@@ -80,7 +80,7 @@ func test_get_knowledge_info() -> void:
 # ステージ別の知識一覧
 func test_get_knowledge_by_stage() -> void:
 	var stage1: Array = _ks.get_by_stage(1)
-	assert_int(stage1.size()).is_equal(6)
+	assert_int(stage1.size()).is_equal(10)  # 基本6 + 追加4(繰り上がり/繰り下がり/十進法/補数)
 	var stage5: Array = _ks.get_by_stage(5)
 	assert_int(stage5.size()).is_equal(6)
 
@@ -159,6 +159,6 @@ func test_random_unobtained_empty_when_all_acquired() -> void:
 func test_collection_rate() -> void:
 	_ks.acquire("K-101")
 	_ks.acquire("K-102")
-	# 2 / 30 = 6.67%
 	var rate: float = _ks.get_collection_rate()
-	assert_float(rate).is_equal_approx(2.0 / 30.0 * 100.0, 0.1)
+	var expected: float = 2.0 / float(_ks.get_total_count()) * 100.0
+	assert_float(rate).is_equal_approx(expected, 0.1)
