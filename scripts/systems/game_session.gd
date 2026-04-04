@@ -8,6 +8,7 @@ signal game_over()
 signal game_clear()
 signal floor_changed(floor_number: int, stage: int)
 signal message(text: String)
+signal skill_slot_full(skill_id: String, skill_name: String)  # スロット満杯時
 
 const MapGen = preload("res://scripts/systems/map_generator.gd")
 const TurnMgr = preload("res://scripts/systems/turn_manager.gd")
@@ -88,6 +89,7 @@ func _init_player() -> void:
 	player = PlayerScript.new()
 	add_child(player)
 	player.dead.connect(_on_player_dead)
+	player.setup([], Vector2i.ZERO)  # 初回: ステータスとスロットを初期化
 
 
 # --- フロア生成 ---
@@ -95,7 +97,7 @@ func _init_player() -> void:
 func _generate_floor() -> void:
 	var floor_seed: int = seed_value + current_floor * 1000
 	grid = map_generator.generate_floor(current_stage, floor_seed)
-	player.setup(grid, map_generator.get_player_start())
+	player.setup_floor(map_generator.get_player_start())
 
 	_start_chest_pos = Vector2i(-1, -1)
 	var is_boss_floor: bool = current_floor % FLOORS_PER_STAGE == 0
@@ -210,9 +212,14 @@ func _acquire_knowledge(knowledge_id: String) -> Dictionary:
 	knowledge_system.acquire(knowledge_id)
 	score_system.register_knowledge()
 	var info: Dictionary = knowledge_system.get_info(knowledge_id)
-	# 技がある知識なら自動装備
+	# 技がある知識なら自動装備を試みる
 	if info.has("skill_id") and info["skill_id"] != "":
-		player.auto_equip_skill(info["skill_id"])
+		var equipped: bool = player.auto_equip_skill(info["skill_id"])
+		if not equipped:
+			# スロット満杯: 入れ替え選択を要求
+			var skill_info: Dictionary = combat_system.get_skill_info(info["skill_id"])
+			var skill_name: String = skill_info.get("name", info["skill_id"])
+			skill_slot_full.emit(info["skill_id"], skill_name)
 	message.emit("宝箱から「%s」を手に入れた!" % info["name"])
 	return {"type": "chest_knowledge", "knowledge_id": knowledge_id, "name": info["name"]}
 

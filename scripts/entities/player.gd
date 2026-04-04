@@ -25,11 +25,18 @@ var skill_slots: Array = []
 var items: Array[String] = []
 
 
+## 新規ゲーム開始時に呼ぶ（全ステータスリセット）
 func setup(grid: Array, start_pos: Vector2i) -> void:
 	grid_pos = start_pos
 	hp = max_hp
 	mp = max_mp
-	_init_skill_slots()
+	if skill_slots.is_empty():
+		_init_skill_slots()
+
+
+## フロア遷移時に呼ぶ（位置のみ更新、ステータス維持）
+func setup_floor(start_pos: Vector2i) -> void:
+	grid_pos = start_pos
 
 
 func _init_skill_slots() -> void:

@@ -15,6 +15,7 @@ const Actions = preload("res://scenes/ingame/ingame_actions.gd")
 const ItemMenuScene = preload("res://scenes/ui/item_menu.tscn")
 const ItemSysScript = preload("res://scripts/systems/item_system.gd")
 const InventoryScene = preload("res://scenes/ui/inventory_screen.tscn")
+const SkillSwapScene = preload("res://scenes/ui/skill_swap_dialog.tscn")
 
 var session: Node
 var _facing: Vector2i = Vector2i.DOWN
@@ -24,6 +25,7 @@ var _popup: Node = null
 var _item_menu: Node = null
 var _item_sys: Node = null
 var _inventory: Node = null
+var _skill_swap: Node = null
 var _renderer: Renderer
 
 
@@ -37,6 +39,7 @@ func _ready() -> void:
 	session.game_clear.connect(_on_game_clear)
 	session.floor_changed.connect(_on_floor_changed)
 	session.message.connect(_on_message)
+	session.skill_slot_full.connect(_on_skill_slot_full)
 
 	_vpad = VirtualPadScene.instantiate()
 	add_child(_vpad)
@@ -59,6 +62,11 @@ func _ready() -> void:
 	_inventory = InventoryScene.instantiate()
 	add_child(_inventory)
 	_inventory.closed.connect(_on_inventory_closed)
+
+	_skill_swap = SkillSwapScene.instantiate()
+	add_child(_skill_swap)
+	_skill_swap.slot_selected.connect(func(_idx: int) -> void: _update_hud())
+	_skill_swap.cancelled.connect(func() -> void: pass)
 
 	# セーブデータのロード or 新規ゲーム
 	var gm: Node = get_node_or_null("/root/GameManager")
@@ -101,6 +109,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _item_menu and _item_menu.is_showing():
 		return
 	if _inventory and _inventory.is_showing():
+		return
+	if _skill_swap and _skill_swap.is_showing():
 		return
 
 	if event is InputEventKey and event.pressed and event.shift_pressed:
@@ -227,6 +237,12 @@ func _show_knowledge_popup(knowledge_id: String) -> void:
 
 func _show_item_popup(item_id: String) -> void:
 	Actions.show_item_popup(_popup, item_id)
+
+
+# --- スキルスロット満杯時の入れ替え ---
+
+func _on_skill_slot_full(skill_id: String, skill_name: String) -> void:
+	_skill_swap.show_dialog(session.player, skill_id, skill_name)
 
 
 # --- ミニマップ ---
