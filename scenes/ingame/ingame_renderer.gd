@@ -19,7 +19,8 @@ var tex_player_left: Texture2D
 var tex_player_right: Texture2D
 var tex_enemy_normal: Texture2D
 var tex_enemy_ghost: Texture2D
-var tex_bosses: Dictionary = {}  # stage -> Texture2D
+var tex_bosses: Dictionary = {}       # stage -> Texture2D
+var tex_enemies: Dictionary = {}      # enemy_name -> Texture2D
 
 var player_sprite: Sprite2D
 var enemy_sprites: Dictionary = {}
@@ -49,6 +50,18 @@ func _load_textures() -> void:
 		var path: String = "res://assets/sprites/boss_stage%d.png" % i
 		if ResourceLoader.exists(path):
 			tex_bosses[i] = load(path)
+	# 敵別スプライト
+	var enemy_sprite_map: Dictionary = {
+		"子狼": "enemy_wolf", "猪": "enemy_boar", "熊": "enemy_bear",
+		"サソリ": "enemy_scorpion", "砂蛇": "enemy_snake", "下級悪魔": "enemy_demon_low",
+		"ゴブリン": "enemy_goblin", "ゴーレム": "enemy_golem", "上位悪魔": "enemy_demon_high",
+		"機械兵": "enemy_soldier", "キメラ": "enemy_chimera", "マッドサイエンティスト": "enemy_scientist",
+		"エイリアン": "enemy_alien", "ブラックホール": "enemy_blackhole", "次元虫": "enemy_worm",
+	}
+	for enemy_name in enemy_sprite_map:
+		var path: String = "res://assets/sprites/%s.png" % enemy_sprite_map[enemy_name]
+		if ResourceLoader.exists(path):
+			tex_enemies[enemy_name] = load(path)
 
 
 func _setup_tile_map() -> void:
@@ -174,6 +187,8 @@ func update_enemy_visuals(enemies: Array) -> void:
 			spr.texture = tex_enemy_ghost
 		elif enemy.ai_pattern == EnemyScript.AIPattern.BOSS:
 			spr.texture = _get_boss_texture(enemy)
+		elif tex_enemies.has(enemy.enemy_name):
+			spr.texture = tex_enemies[enemy.enemy_name]
 		else:
 			spr.texture = tex_enemy_normal
 
