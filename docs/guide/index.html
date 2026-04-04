@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Math Mage 攻略ガイド</title>
+<style>
+:root {
+  --bg: #1a1a2e;
+  --bg2: #16213e;
+  --bg3: #0f3460;
+  --text: #e0e0e0;
+  --accent: #e94560;
+  --gold: #f0c040;
+  --blue: #5090d0;
+  --green: #50c070;
+  --purple: #a060d0;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+}
+.container { max-width: 960px; margin: 0 auto; padding: 20px; }
+header {
+  text-align: center;
+  padding: 40px 20px;
+  background: linear-gradient(135deg, var(--bg2), var(--bg3));
+  border-bottom: 3px solid var(--accent);
+}
+header h1 { font-size: 2.5em; color: var(--gold); letter-spacing: 0.1em; }
+header p { color: #aaa; margin-top: 8px; }
+nav {
+  background: var(--bg2);
+  padding: 12px 20px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid #333;
+}
+nav ul { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+nav a {
+  color: var(--blue);
+  text-decoration: none;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  transition: background 0.2s;
+}
+nav a:hover { background: var(--bg3); }
+section { margin: 40px 0; }
+h2 {
+  font-size: 1.6em;
+  color: var(--gold);
+  border-left: 4px solid var(--accent);
+  padding-left: 12px;
+  margin-bottom: 20px;
+}
+h3 {
+  font-size: 1.2em;
+  color: var(--blue);
+  margin: 24px 0 12px;
+}
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+.card {
+  background: var(--bg2);
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  transition: border-color 0.2s;
+}
+.card:hover { border-color: var(--accent); }
+.card img {
+  width: 48px;
+  height: 48px;
+  image-rendering: pixelated;
+  flex-shrink: 0;
+}
+.card-body { flex: 1; }
+.card-title { font-weight: bold; color: var(--gold); font-size: 1.05em; }
+.card-sub { font-size: 0.85em; color: #999; margin: 2px 0; }
+.card-desc { font-size: 0.9em; margin-top: 4px; }
+.tag {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-size: 0.75em;
+  font-weight: bold;
+}
+.tag-common { background: #555; color: #ddd; }
+.tag-uncommon { background: #2a6e3f; color: #afd9a0; }
+.tag-rare { background: #2a4a8e; color: #a0c0f0; }
+.tag-legendary { background: #8e4a2a; color: #f0c0a0; }
+.tag-formula { background: #2a5a6e; color: #a0d0e0; }
+.tag-theorem { background: #6e2a5a; color: #e0a0d0; }
+.tag-definition { background: #5a6e2a; color: #d0e0a0; }
+.tag-stage { background: var(--bg3); color: var(--blue); }
+.tag-limited { background: #8e2a2a; color: #f0a0a0; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+  font-size: 0.9em;
+}
+th, td {
+  padding: 8px 12px;
+  border: 1px solid #333;
+  text-align: left;
+}
+th { background: var(--bg3); color: var(--gold); }
+tr:nth-child(even) { background: rgba(255,255,255,0.03); }
+.tip-box {
+  background: var(--bg3);
+  border-left: 4px solid var(--green);
+  padding: 16px;
+  margin: 16px 0;
+  border-radius: 0 8px 8px 0;
+}
+.tip-box strong { color: var(--green); }
+.warn-box {
+  background: var(--bg3);
+  border-left: 4px solid var(--accent);
+  padding: 16px;
+  margin: 16px 0;
+  border-radius: 0 8px 8px 0;
+}
+.warn-box strong { color: var(--accent); }
+.img-path { color: #666; font-size: 0.7em; }
+footer {
+  text-align: center;
+  padding: 30px;
+  color: #555;
+  border-top: 1px solid #333;
+  margin-top: 40px;
+}
+@media (max-width: 600px) {
+  .card-grid { grid-template-columns: 1fr; }
+  header h1 { font-size: 1.8em; }
+  nav ul { flex-direction: column; align-items: center; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Math Mage</h1>
+  <p>-- 数学ローグライクRPG 攻略ガイド --</p>
+</header>
+
+<nav>
+<ul>
+  <li><a href="#overview">概要</a></li>
+  <li><a href="#controls">操作方法</a></li>
+  <li><a href="#skills">技一覧</a></li>
+  <li><a href="#items">アイテム</a></li>
+  <li><a href="#enemies">敵一覧</a></li>
+  <li><a href="#gimmicks">ギミック</a></li>
+  <li><a href="#strategy">攻略Tips</a></li>
+</ul>
+</nav>
+
+<div class="container">
+
+<!-- ===== 概要 ===== -->
+<section id="overview">
+<h2>ゲーム概要</h2>
+<p>数学の知識を武器に戦う魔道士のローグライクRPG。敵の頭上に表示された数値をぴったり<strong>0</strong>にして倒す。宝箱から知識を獲得し、技やフィールドアクションとして活用しよう。</p>
+
+<h3>ゲーム構成</h3>
+<table>
+<tr><th>ステージ</th><th>時代</th><th>数学テーマ</th><th>フロア</th><th>ボス</th></tr>
+<tr><td>1</td><td>石器時代</td><td>自然数・加減算</td><td>1F-5F</td><td>原始の王 (10)</td></tr>
+<tr><td>2</td><td>古代文明</td><td>乗除算・分数</td><td>6F-10F</td><td>スフィンクス (24)</td></tr>
+<tr><td>3</td><td>中世</td><td>方程式・幾何学</td><td>11F-15F</td><td>魔王 (49)</td></tr>
+<tr><td>4</td><td>近代</td><td>微積分・確率</td><td>16F-20F</td><td>計算機械 (100)</td></tr>
+<tr><td>5</td><td>宇宙</td><td>線形代数・位相</td><td>21F-25F</td><td>宇宙神 (256)</td></tr>
+</table>
+
+<h3>戦闘の基本</h3>
+<ul>
+  <li>敵の数値を技で変化させ、<strong>ぴったり0</strong>にすると撃破</li>
+  <li>数値が<strong>負</strong>になると幽霊化（壁通過、ダメージ無効、攻撃でのみ数値変動）</li>
+  <li>幽霊も技で0にしないと倒せない</li>
+  <li>ぴったり0で倒すとコンボ加算、幽霊化させるとコンボリセット</li>
+</ul>
+</section>
+
+<!-- ===== 操作方法 ===== -->
+<section id="controls">
+<h2>操作方法</h2>
+<h3>PC（キーボード）</h3>
+<table>
+<tr><th>キー</th><th>動作</th><th>ターン消費</th></tr>
+<tr><td>矢印キー / WASD</td><td>移動（向きも変わる）</td><td>1</td></tr>
+<tr><td>Shift + 矢印</td><td>その場で方向転換</td><td>0</td></tr>
+<tr><td>1-6</td><td>技を使用（向いている方向の敵に）</td><td>1</td></tr>
+<tr><td>I</td><td>アイテムメニュー</td><td>使用時1</td></tr>
+<tr><td>Enter</td><td>調べる（階段/宝箱/ギミック）</td><td>0</td></tr>
+<tr><td>Esc</td><td>インベントリ（技の装備変更）</td><td>0</td></tr>
+<tr><td>Space / .</td><td>待機</td><td>1</td></tr>
+</table>
+
+<h3>モバイル（タッチ）</h3>
+<p>画面左にバーチャルパッド（移動/転換切替）、右に技ボタン・待機・調べる・menuボタン。</p>
+</section>
+
+<!-- ===== 技一覧 ===== -->
+<section id="skills">
+<h2>技一覧</h2>
+
+<h3>ステージ1: 石器時代 -- 加減算</h3>
+<div class="card-grid">
+  <div class="card">
+    <img src="../../assets/sprites/math_subtraction.png" alt="減法">
+    <div class="card-body">
+      <div class="card-title">マイナス1 <span class="tag tag-formula">公式</span></div>
+      <div class="card-sub">効果: -1 / MP: 0 / 知識: 減法 (K-103)</div>
+      <div class="card-desc">開始部屋の宝箱から確定入手。全ての基本。</div>
+    </div>
+  </div>
+  <div class="card">
+    <img src="../../assets/sprites/math_addition.png" alt="加法">
+    <div class="card-body">
+      <div class="card-title">プラス1 <span class="tag tag-formula">公式</span></div>
+      <div class="card-sub">効果: +1 / MP: 0 / 知識: 加法 (K-102)</div>
+      <div class="card-desc">幽霊化した敵を0に戻すのに有効。</div>
+    </div>
+  </div>
+  <div class="card">
+    <img src="../../assets/sprites/math_addition.png" alt="繰り上がり">
+    <div class="card-body">
+      <div class="card-title">プラス3 <span class="tag tag-formula">公式</span></div>
+      <div class="card-sub">効果: +3 / MP: 1 / 知識: 繰り上がり (K-107)</div>
+      <div class="card-desc">調整用。-5で行き過ぎた時に。</div>
+    </div>
+  </div>
+  <div class="card">
+    <img src="../../assets/sprites/math_subtraction.png" alt="繰り下がり">
+    <div class="card-body">
+      <div class="card-title">マイナス5 <span class="tag tag-formula">公式</span></div>
+      <div class="card-sub">効果: -5 / MP: 2 / 知識: 繰り下がり (K-108)</div>
+      <div class="card-desc">序盤のレア技。見つけたらラッキー!</div>
+    </div>
+  </div>
+  <div class="card">
+    <img src="../../assets/sprites/math_addition.png" alt="十進法">
+    <div class="card-body">
+      <div class="card-title">プラス10 <span class="tag tag-formula">公式</span></div>
+      <div class="card-sub">効果: +10 / MP: 3 / 知識: 十進法 (K-109)</div>
+      <div class="card-desc">大きく数値を上げる。負からの復帰に。</div>
+    </div>
+  </div>
+  <div class="card">
+    <img src="../../assets/sprites/math_subtraction.png" alt="補数">
+    <div class="card-body">
+      <div class="card-title">マイナス10 <span class="tag tag-formula">公式</span></div>
+      <div class="card-sub">効果: -10 / MP: 3 / 知識: 補数 (K-110)</div>
+      <div class="card-desc">一気に削る。幽霊化のリスクに注意。</div>
+    </div>
+  </div>
+</div>
+
+<h3>ステージ2: 古代文明 -- 乗除算</h3>
+<div class="card-grid">
+  <div class="card">
+    <img src="../../assets/sprites/math_multiply.png" alt="乗法">
+    <div class="card-body">
+      <div class="card-title">ダブル (x2) <span class="tag tag-formula">公式</span></div>
+      <div class="card-sub">効果: x2 / MP: 3 / 知識: 乗法 (K-201)</div>
+      <div class="card-desc">偶数にして/2で0にするコンボの起点。</div>
+    </div>
+  </div>
+  <div class="card">
+    <img src="../../assets/sprites/math_division.png" alt="除法">
+    <div class="card-body">
+      <div class="card-title">ハーフ (/2) <span class="tag tag-formula">公式</span></div>
+      <div class="card-sub">効果: /2(切捨) / MP: 3 / 知識: 除法 (K-202)</div>
+      <div class="card-desc">大きい数値の敵に絶大な効果。8->4->2->1->0。</div>
+    </div>
+  </div>
+  <div class="card">
+    <img src="../../assets/sprites/math_multiply.png" alt="トリプル">
+    <div class="card-body">
+      <div class="card-title">トリプル (x3) <span class="tag tag-formula">公式</span></div>
+      <div class="card-sub">効果: x3 / MP: 4</div>
+      <div class="card-desc">3の倍数にして/3で0にする戦略。</div>
+    </div>
+  </div>
+  <div class="card">
+    <img src="../../assets/sprites/math_division.png" alt="サード">
+    <div class="card-body">
+      <div class="card-title">サード (/3) <span class="tag tag-formula">公式</span></div>
+      <div class="card-sub">効果: /3(切捨) / MP: 4</div>
+      <div class="card-desc">/2より大きく削れる。端数に注意。</div>
+    </div>
+  </div>
+  <div class="card">
+    <img src="../../assets/sprites/math_modulo.png" alt="モジュロ">
+    <div class="card-body">
+      <div class="card-title">モジュロ4 (%4) <span class="tag tag-formula">公式</span></div>
+      <div class="card-sub">効果: %4 / MP: 3 / 知識: 剰余 (K-203)</div>
+      <div class="card-desc">一気に0-3に。4の倍数なら即0!</div>
+    </div>
+  </div>
+</div>
+
+<h3>ステージ3: 中世 -- 関数</h3>
+<div class="card-grid">
+  <div class="card">
+    <img src="../../assets/sprites/math_absolute.png" alt="絶対値">
+    <div class="card-body">
+      <div class="card-title">アブソリュート (abs) <span class="tag tag-formula">公式</span></div>
+      <div class="card-sub">効果: abs() / MP: 4 / 知識: 絶対値 (K-301)</div>
+      <div class="card-desc">幽霊の負の値を正に戻す。</div>
+    </div>
+  </div>
+  <div class="card">
+    <img src="../../assets/sprites/math_negate.png" alt="ネゲート">
+    <div class="card-body">
+      <div class="card-title">ネゲート (x-1) <span class="tag tag-formula">公式</span></div>
+      <div class="card-sub">効果: 符号反転 / MP: 3 / 知識: 符号反転 (K-302)</div>
+      <div class="card-desc">正を負に。幽霊化させてから再度0を狙う上級テク。</div>
+    </div>
+  </div>
+  <div class="card">
+    <img src="../../assets/sprites/math_square.png" alt="平方">
+    <div class="card-body">
+      <div class="card-title">スクエア (x^2) <span class="tag tag-formula">公式</span></div>
+      <div class="card-sub">効果: x^2 / MP: 5 / 知識: 平方 (K-303)</div>
+      <div class="card-desc">1を1のまま維持。それ以外は増大するので注意。</div>
+    </div>
+  </div>
+  <div class="card">
+    <img src="../../assets/sprites/math_sqrt.png" alt="ルート">
+    <div class="card-body">
+      <div class="card-title">ルート (sqrt) <span class="tag tag-formula">公式</span></div>
+      <div class="card-sub">効果: floor(sqrt()) / MP: 5 / 知識: 平方根 (K-304)</div>
+      <div class="card-desc">大きい数値を一気に縮小。100->10, 49->7。</div>
+    </div>
+  </div>
+</div>
+
+<h3>ステージ4: 近代 -- 高等数学</h3>
+<div class="card-grid">
+  <div class="card">
+    <img src="../../assets/sprites/math_derivative.png" alt="微分">
+    <div class="card-body">
+      <div class="card-title">デリバティブ <span class="tag tag-formula">公式</span></div>
+      <div class="card-sub">効果: 桁数に変換 / MP: 6 / 知識: 微分 (K-401)</div>
+      <div class="card-desc">125->3, 1000->4。どんな大きな数も一桁に。</div>
+    </div>
+  </div>
+  <div class="card">
+    <img src="../../assets/sprites/math_integral.png" alt="積分">
+    <div class="card-body">
+      <div class="card-title">インテグラル <span class="tag tag-formula">公式</span></div>
+      <div class="card-sub">効果: 各桁合計 / MP: 6 / 知識: 積分 (K-402)</div>
+      <div class="card-desc">125->8(1+2+5)。デリバティブとの連携が強力。</div>
+    </div>
+  </div>
+  <div class="card">
+    <img src="../../assets/sprites/math_log.png" alt="対数">
+    <div class="card-body">
+      <div class="card-title">ログ (log2) <span class="tag tag-formula">公式</span></div>
+      <div class="card-sub">効果: floor(log2()) / MP: 6 / 知識: 対数 (K-404)</div>
+      <div class="card-desc">256->8, 128->7。2の累乗の敵に特効。</div>
+    </div>
+  </div>
+  <div class="card">
+    <img src="../../assets/sprites/math_probability.png" alt="確率">
+    <div class="card-body">
+      <div class="card-title">プロバビリティ <span class="tag tag-formula">公式</span></div>
+      <div class="card-sub">効果: 50%で0化 / MP: 5 / 知識: 確率 (K-403)</div>
+      <div class="card-desc">ギャンブル技。成功すれば即撃破、失敗は変化なし。</div>
+    </div>
+  </div>
+  <div class="card">
+    <img src="../../assets/sprites/math_zero_vector.png" alt="ゼロ乗算">
+    <div class="card-body">
+      <div class="card-title">ゼロ乗算 (x0) <span class="tag tag-limited">3回制限</span></div>
+      <div class="card-sub">効果: x0(即0化) / MP: 0 / 知識: 零化写像 (K-407)</div>
+      <div class="card-desc">最強技。どんな数値も一撃で0に。1ゲーム3回限定。超稀。</div>
+    </div>
+  </div>
+</div>
+
+<h3>ステージ5: 宇宙 -- 究極</h3>
+<div class="card-grid">
+  <div class="card">
+    <img src="../../assets/sprites/math_zero_vector.png" alt="ゼロベクトル">
+    <div class="card-body">
+      <div class="card-title">ゼロベクトル <span class="tag tag-theorem">定理</span></div>
+      <div class="card-sub">効果: 隣接全敵を0化 / MP: 15 / 知識: ゼロベクトル (K-504)</div>
+      <div class="card-desc">究極の範囲技。MP消費が重いが効果は絶大。</div>
+    </div>
+  </div>
+  <div class="card">
+    <img src="../../assets/sprites/math_identity.png" alt="恒等写像">
+    <div class="card-body">
+      <div class="card-title">アイデンティティ <span class="tag tag-theorem">定理</span></div>
+      <div class="card-sub">効果: n/n=1 / MP: 8 / 知識: 恒等写像 (K-503)</div>
+      <div class="card-desc">どんな数値も1に。あとは-1で撃破。</div>
+    </div>
+  </div>
+  <div class="card">
+    <img src="../../assets/sprites/math_topology.png" alt="位相変換">
+    <div class="card-body">
+      <div class="card-title">トポロジー <span class="tag tag-formula">公式</span></div>
+      <div class="card-sub">効果: 最寄りの素数に / MP: 10 / 知識: 位相変換 (K-505)</div>
+      <div class="card-desc">数値を素数に変換。2なら-1x2で撃破。</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ===== アイテム ===== -->
+<section id="items">
+<h2>アイテム一覧</h2>
+
+<h3>回復系</h3>
+<div class="card-grid">
+  <div class="card">
+    <img src="../../assets/sprites/item_herb.png" alt="薬草">
+    <div class="card-body">
+      <div class="card-title">薬草 <span class="tag tag-common">普通</span></div>
+      <div class="card-desc">HP +10 回復。序盤の生命線。</div>
+    </div>
+  </div>
+  <div class="card">
+    <img src="../../assets/sprites/item_upper_herb.png" alt="上薬草">
+    <div class="card-body">
+      <div class="card-title">上薬草 <span class="tag tag-uncommon">やや稀</span></div>
+      <div class="card-sub">ステージ2以降</div>
+      <div class="card-desc">HP +30 回復。</div>
+    </div>
+  </div>
+  <div class="card">
+    <img src="../../assets/sprites/item_panacea.png" alt="万能薬">
+    <div class="card-body">
+      <div class="card-title">万能薬 <span class="tag tag-rare">稀</span></div>
+      <div class="card-sub">ステージ3以降</div>
+      <div class="card-desc">HP 全回復。ボス戦前に温存。</div>
+    </div>
+  </div>
+  <div class="card">
+    <img src="../../assets/sprites/item_wisdom_water.png" alt="知恵の水">
+    <div class="card-body">
+      <div class="card-title">知恵の水 <span class="tag tag-common">普通</span></div>
+      <div class="card-desc">MP +5 回復。技を多用するなら必須。</div>
+    </div>
+  </div>
+  <div class="card">
+    <img src="../../assets/sprites/item_awakening_water.png" alt="覚醒の水">
+    <div class="card-body">
+      <div class="card-title">覚醒の水 <span class="tag tag-rare">稀</span></div>
+      <div class="card-sub">ステージ3以降</div>
+      <div class="card-desc">MP 全回復。</div>
+    </div>
+  </div>
+  <div class="card">
+    <img src="../../assets/sprites/item_elixir.png" alt="エリクサー">
+    <div class="card-body">
+      <div class="card-title">エリクサー <span class="tag tag-legendary">超稀</span></div>
+      <div class="card-sub">ステージ4以降</div>
+      <div class="card-desc">HP/MP 全回復。見つけたら即確保。</div>
+    </div>
+  </div>
+</div>
+
+<h3>戦闘補助系</h3>
+<div class="card-grid">
+  <div class="card">
+    <img src="../../assets/sprites/item_even_powder.png" alt="偶数の粉">
+    <div class="card-body">
+      <div class="card-title">偶数の粉 <span class="tag tag-common">普通</span></div>
+      <div class="card-desc">敵の数値を最寄りの偶数に。/2コンボの準備に。</div>
+    </div>
+  </div>
+  <div class="card">
+    <img src="../../assets/sprites/item_odd_powder.png" alt="奇数の粉">
+    <div class="card-body">
+      <div class="card-title">奇数の粉 <span class="tag tag-common">普通</span></div>
+      <div class="card-desc">敵の数値を最寄りの奇数に。</div>
+    </div>
+  </div>
+  <div class="card">
+    <img src="../../assets/sprites/item_zero_scroll.png" alt="零の巻物">
+    <div class="card-body">
+      <div class="card-title">零の巻物 <span class="tag tag-legendary">超稀</span></div>
+      <div class="card-sub">ステージ3以降</div>
+      <div class="card-desc">敵の数値を0に（即死）。1回使い切り。</div>
+    </div>
+  </div>
+  <div class="card">
+    <img src="../../assets/sprites/item_reverse_mirror.png" alt="反転の鏡">
+    <div class="card-body">
+      <div class="card-title">反転の鏡 <span class="tag tag-uncommon">やや稀</span></div>
+      <div class="card-sub">ステージ2以降</div>
+      <div class="card-desc">敵の数値の符号を反転。</div>
+    </div>
+  </div>
+  <div class="card">
+    <img src="../../assets/sprites/item_halving_sand.png" alt="半減の砂">
+    <div class="card-body">
+      <div class="card-title">半減の砂 <span class="tag tag-uncommon">やや稀</span></div>
+      <div class="card-sub">ステージ2以降</div>
+      <div class="card-desc">敵の数値を半分に。/2技がない序盤の代替。</div>
+    </div>
+  </div>
+</div>
+
+<h3>探索・特殊系</h3>
+<div class="card-grid">
+  <div class="card">
+    <img src="../../assets/sprites/item_map_piece.png" alt="マップの欠片">
+    <div class="card-body">
+      <div class="card-title">マップの欠片 <span class="tag tag-common">普通</span></div>
+      <div class="card-desc">ミニマップ全体を表示。階段の位置が分かる。</div>
+    </div>
+  </div>
+  <div class="card">
+    <img src="../../assets/sprites/item_warp_stone.png" alt="ワープの石">
+    <div class="card-body">
+      <div class="card-title">ワープの石 <span class="tag tag-common">普通</span></div>
+      <div class="card-sub">ステージ2以降</div>
+      <div class="card-desc">ランダムな部屋に瞬間移動。緊急脱出に。</div>
+    </div>
+  </div>
+  <div class="card">
+    <img src="../../assets/sprites/item_exp_book.png" alt="経験の書">
+    <div class="card-body">
+      <div class="card-title">経験の書 <span class="tag tag-uncommon">やや稀</span></div>
+      <div class="card-sub">ステージ2以降</div>
+      <div class="card-desc">経験値 +50。レベルアップでHP/MP全回復するのでタイミングが重要。</div>
+    </div>
+  </div>
+  <div class="card">
+    <img src="../../assets/sprites/item_slot_expansion.png" alt="スロット拡張">
+    <div class="card-body">
+      <div class="card-title">スロット拡張 <span class="tag tag-rare">稀</span></div>
+      <div class="card-sub">ステージ2以降</div>
+      <div class="card-desc">技スロットを+1。最大6枠。超重要。</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ===== 敵一覧 ===== -->
+<section id="enemies">
+<h2>敵一覧</h2>
+
+<table>
+<tr><th>Stage</th><th>名前</th><th>数値</th><th>攻撃力</th><th>EXP</th><th>AI</th><th>攻略メモ</th></tr>
+<tr><td>1</td><td>子狼</td><td>1-2</td><td>1</td><td>2</td><td>追跡</td><td>-1で1-2ターン。入門敵。</td></tr>
+<tr><td>1</td><td>猪</td><td>2-4</td><td>2</td><td>4</td><td>突進</td><td>直線で突っ込んでくる。横に避けて対処。</td></tr>
+<tr><td>1</td><td>熊</td><td>4-8</td><td>3</td><td>8</td><td>追跡</td><td>-5があると楽。なければ逃げるのも手。</td></tr>
+<tr style="background:#3a2020"><td>1</td><td><strong>原始の王</strong></td><td><strong>10</strong></td><td>8</td><td>30</td><td>ボス</td><td>-5x2で0。-1だけなら10ターン必要。</td></tr>
+<tr><td>2</td><td>サソリ</td><td>5-12</td><td>4</td><td>6</td><td>追跡</td><td>/2が有効。12->6->3->-1で2ミス。</td></tr>
+<tr><td>2</td><td>砂蛇</td><td>8-15</td><td>5</td><td>8</td><td>ランダム</td><td>動きが読めない。距離を保って対処。</td></tr>
+<tr><td>2</td><td>下級悪魔</td><td>12-24</td><td>7</td><td>12</td><td>追跡</td><td>%4で0-3に縮小してから仕留める。</td></tr>
+<tr style="background:#3a2020"><td>2</td><td><strong>スフィンクス</strong></td><td><strong>24</strong></td><td>12</td><td>60</td><td>ボス</td><td>24は/2で12->6->3。%4で0化も。</td></tr>
+<tr><td>3</td><td>ゴブリン</td><td>10-20</td><td>6</td><td>10</td><td>追跡</td><td>sqrtで縮小。20->4->2->1->0。</td></tr>
+<tr><td>3</td><td>ゴーレム</td><td>20-36</td><td>10</td><td>18</td><td>鈍足</td><td>2ターンに1回行動。落ち着いて計算。</td></tr>
+<tr><td>3</td><td>上位悪魔</td><td>25-50</td><td>12</td><td>25</td><td>賢い追跡</td><td>最短経路で追ってくる。通路で迎撃。</td></tr>
+<tr style="background:#3a2020"><td>3</td><td><strong>魔王</strong></td><td><strong>49</strong></td><td>18</td><td>120</td><td>ボス</td><td>sqrt(49)=7。7をどう0にするかがカギ。</td></tr>
+<tr><td>4</td><td>機械兵</td><td>20-50</td><td>10</td><td>20</td><td>巡回</td><td>巡回中は無視可能。近づくと追跡開始。</td></tr>
+<tr><td>4</td><td>キメラ</td><td>30-64</td><td>14</td><td>30</td><td>ランダム</td><td>log2(64)=6。2の累乗ならlog2が最適。</td></tr>
+<tr><td>4</td><td>マッドサイエンティスト</td><td>50-100</td><td>16</td><td>40</td><td>逃走</td><td>追いかける必要あり。角に追い込む。</td></tr>
+<tr style="background:#3a2020"><td>4</td><td><strong>計算機械</strong></td><td><strong>100</strong></td><td>22</td><td>200</td><td>ボス</td><td>derivative(100)=3。integral(100)=1。</td></tr>
+<tr><td>5</td><td>エイリアン</td><td>50-128</td><td>15</td><td>40</td><td>賢い追跡</td><td>identity(n)=1。あとは-1で確殺。</td></tr>
+<tr><td>5</td><td>ブラックホール</td><td>100-200</td><td>20</td><td>60</td><td>吸引</td><td>動かないが引き寄せてくる。遠距離から技を。</td></tr>
+<tr><td>5</td><td>次元虫</td><td>64-150</td><td>18</td><td>50</td><td>ワープ</td><td>3ターンに1回ワープ。位置が安定しない。</td></tr>
+<tr style="background:#3a2020"><td>5</td><td><strong>宇宙神</strong></td><td><strong>256</strong></td><td>30</td><td>500</td><td>ボス</td><td>log2(256)=8。ゼロ乗算を温存していれば一撃。</td></tr>
+</table>
+
+<div class="tip-box">
+  <strong>ボスの特殊行動:</strong> 数値が初期値の半分以下になると攻撃力が1.5倍になる。速攻撃破を狙うか、回復を準備するか判断が必要。
+</div>
+</section>
+
+<!-- ===== ギミック ===== -->
+<section id="gimmicks">
+<h2>フィールドギミック</h2>
+<p>マップ上の特殊タイル。隣接して「調べる」で、対応する知識があれば解除できる。</p>
+
+<table>
+<tr><th>Stage</th><th>ギミック</th><th>必要な知識</th><th>解除効果</th></tr>
+<tr><td>1</td><td>「無」の壁</td><td>零の発見 (K-104)</td><td>壁が消えて隠し部屋が出現</td></tr>
+<tr><td>1</td><td>氷壁</td><td>負の数 (K-105)</td><td>氷が溶けて通路出現</td></tr>
+<tr><td>2</td><td>隠し通路</td><td>数直線 (K-106)</td><td>見えない通路が可視化</td></tr>
+<tr><td>2</td><td>暗号扉</td><td>約数 (K-206)</td><td>扉が開く</td></tr>
+<tr><td>3</td><td>鍵付き扉</td><td>一次方程式 (K-306)</td><td>方程式を解いて開錠</td></tr>
+<tr><td>3</td><td>重力反転スイッチ</td><td>符号反転 (K-302)</td><td>エリアの通行可否が反転</td></tr>
+<tr><td>4</td><td>ワープゾーン</td><td>対数 (K-404)</td><td>制御して任意先にワープ</td></tr>
+<tr><td>4</td><td>無限回廊</td><td>極限 (K-406)</td><td>回廊が有限化して通過可能</td></tr>
+<tr><td>5</td><td>空間歪み</td><td>位相変換 (K-505)</td><td>空間が整理されて通過可能</td></tr>
+<tr><td>5</td><td>最終扉</td><td>無限の定義 (K-506)</td><td>ラスボスエリア開放</td></tr>
+</table>
+</section>
+
+<!-- ===== 攻略Tips ===== -->
+<section id="strategy">
+<h2>攻略Tips</h2>
+
+<div class="tip-box">
+  <strong>序盤 (1F-5F):</strong> -1だけで進む。子狼(1-2)は楽に倒せる。宝箱で「繰り下がり(-5)」が出たら即装備。熊(4-8)は無理せず回避してもOK。レベルアップでHP/MP全回復するのでタイミングを計ろう。
+</div>
+
+<div class="tip-box">
+  <strong>中盤 (6F-15F):</strong> /2(ハーフ)が手に入ると世界が変わる。大きい数値の敵は /2 を連打して小さくしてから -1 で仕留める。%4(モジュロ)は4の倍数の敵に即効。偶数の粉 + /2 のコンボも強力。
+</div>
+
+<div class="tip-box">
+  <strong>終盤 (16F-25F):</strong> derivative(桁数変換)とintegral(各桁合計)が強い。100 -> derivative -> 3 -> -1x3 で撃破。identity(n/n=1)は全ての敵を1にできる最高の汎用技。ゼロ乗算はボス戦に温存。
+</div>
+
+<div class="warn-box">
+  <strong>幽霊化に注意:</strong> 数値を負にすると幽霊化。幽霊は壁を通過してくるので厄介。abs()で正に戻してから処理するか、+系の技で0に調整する。幽霊化させるとコンボがリセットされるのでスコアにも影響。
+</div>
+
+<div class="tip-box">
+  <strong>ボス攻略の定石:</strong>
+  <ul style="margin-top:8px">
+    <li>原始の王(10): -5 x2、または -1 x10</li>
+    <li>スフィンクス(24): /2 x3 -> 3 -> -1 x3、または %4 -> 0</li>
+    <li>魔王(49): sqrt -> 7 -> -1 x7、または %4 -> 1 -> -1</li>
+    <li>計算機械(100): derivative -> 3 -> -1 x3、または /2 連打</li>
+    <li>宇宙神(256): log2 -> 8 -> /2 x3 -> 1 -> -1、またはゼロ乗算</li>
+  </ul>
+</div>
+
+<div class="tip-box">
+  <strong>スコアを伸ばすコツ:</strong>
+  <ul style="margin-top:8px">
+    <li>ぴったり0撃破を連続してコンボを稼ぐ</li>
+    <li>幽霊化を避ける（ペナルティ -50/回、コンボリセット）</li>
+    <li>ターン数を少なくする（ペナルティ -2/ターン）</li>
+    <li>宝箱は全て開けて知識収集率を上げる（+200/個）</li>
+  </ul>
+</div>
+</section>
+
+</div>
+
+<footer>
+  Math Mage 攻略ガイド | 2D数学ローグライクRPG
+</footer>
+
+</body>
+</html>
