@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:docs.godotengine.org)",
+      "WebFetch(domain:www.gdquest.com)",
+      "Bash(wc:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(git clone:*)",
+      "Bash(godot --headless -s addons/gdUnit4/bin/GdUnitCmdTool.gd -a tests/test_turn_manager.gd)",
+      "Bash(godot --headless -s addons/gdUnit4/bin/GdUnitCmdTool.gd --ignoreHeadlessMode -a tests/)",
+      "Bash(godot:*)",
+      "Bash(python3)",
+      "Bash(find /Users/nakamuro/GodotActionGame/scripts /Users/nakamuro/GodotActionGame/scenes -name \"*.gd\" -exec wc -l {} +)"
+    ]
+  }
+}

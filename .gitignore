@@ -4,6 +4,7 @@
 
 # GdUnit4 reports
 /reports/gdunit/
+/reports/report_*/
 
 # Build outputs
 /builds/
