@@ -9,9 +9,9 @@ const PU = preload("res://scripts/systems/platform_ui.gd")
 # PC用の設定値
 func test_pc_screen_config() -> void:
 	var config: Dictionary = PU.get_screen_config(PU.Platform.PC)
-	assert_int(config["width"]).is_equal(640)
-	assert_int(config["height"]).is_equal(480)
-	assert_float(config["camera_zoom"]).is_equal(2.0)
+	assert_int(config["width"]).is_equal(960)
+	assert_int(config["height"]).is_equal(720)
+	assert_float(config["camera_zoom"]).is_equal(3.0)
 
 
 # モバイル用の設定値

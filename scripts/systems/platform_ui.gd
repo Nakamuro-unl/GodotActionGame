@@ -44,9 +44,9 @@ static func get_screen_config(platform: Platform) -> Dictionary:
 	match platform:
 		Platform.PC:
 			return {
-				"width": 640,
-				"height": 480,
-				"camera_zoom": 2.0,
+				"width": 960,
+				"height": 720,
+				"camera_zoom": 3.0,
 				"orientation": DisplayServer.SCREEN_LANDSCAPE,
 			}
 		Platform.MOBILE:
@@ -65,12 +65,12 @@ static func get_hud_layout(platform: Platform) -> Dictionary:
 		Platform.PC:
 			return {
 				"hud_top_y": 4,
-				"skill_slots_y": 432,
-				"message_log_y": 460,
-				"key_hints_y": 470,
-				"minimap_x": -108,
+				"skill_slots_y": 660,
+				"message_log_y": 690,
+				"key_hints_y": 706,
+				"minimap_x": -118,
 				"minimap_y": 24,
-				"minimap_size": 100,
+				"minimap_size": 110,
 			}
 		Platform.MOBILE:
 			return {
