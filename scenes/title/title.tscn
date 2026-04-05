@@ -11,18 +11,57 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_title")
 
-[node name="MenuLabel" type="Label" parent="."]
+[node name="VBox" type="VBoxContainer" parent="."]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -120.0
+offset_top = -130.0
+offset_right = 120.0
+offset_bottom = 130.0
 grow_horizontal = 2
 grow_vertical = 2
-horizontal_alignment = 1
-vertical_alignment = 1
-text = "MATH MAGE
+theme_override_constants/separation = 8
 
-> はじめから
-  ランキング
-  あそびかた
-  せってい"
+[node name="TitleLabel" type="Label" parent="VBox"]
+layout_mode = 2
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 24
+text = "MATH MAGE"
+
+[node name="Spacer" type="Control" parent="VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 16)
+
+[node name="BtnStart" type="Button" parent="VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 36)
+text = "はじめから"
+theme_override_font_sizes/font_size = 14
+
+[node name="BtnContinue" type="Button" parent="VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 36)
+text = "つづきから"
+theme_override_font_sizes/font_size = 14
+
+[node name="BtnRanking" type="Button" parent="VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 36)
+text = "ランキング"
+theme_override_font_sizes/font_size = 14
+
+[node name="BtnHowTo" type="Button" parent="VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 36)
+text = "あそびかた"
+theme_override_font_sizes/font_size = 14
+
+[node name="BtnSettings" type="Button" parent="VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 36)
+text = "せってい"
+theme_override_font_sizes/font_size = 14

@@ -14,13 +14,18 @@ func _ready() -> void:
 		_result = gm.last_result
 	_display_result()
 	_save_ranking()
+	$BackButton.pressed.connect(_go_back)
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_accept"):
-		var gm: Node = get_node_or_null("/root/GameManager")
-		if gm:
-			gm.change_state(GMS.State.TITLE)
+		_go_back()
+
+
+func _go_back() -> void:
+	var gm: Node = get_node_or_null("/root/GameManager")
+	if gm:
+		gm.change_state(GMS.State.TITLE)
 
 
 func _display_result() -> void:

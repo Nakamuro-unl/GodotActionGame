@@ -14,6 +14,7 @@ const ITEMS: Array[String] = ["SE音量", "BGM音量", "戻る"]
 func _ready() -> void:
 	_load_settings()
 	_update_display()
+	$BackButton.pressed.connect(_go_back)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -29,15 +30,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		_adjust_value(10)
 	elif event.is_action_pressed("ui_accept"):
 		if _cursor == 2:
-			_save_settings()
-			var gm := get_node_or_null("/root/GameManager")
-			if gm:
-				gm.change_state(GMS.State.TITLE)
+			_go_back()
 	elif event.is_action_pressed("ui_cancel"):
-		_save_settings()
-		var gm := get_node_or_null("/root/GameManager")
-		if gm:
-			gm.change_state(GMS.State.TITLE)
+		_go_back()
 
 
 func _adjust_value(delta: int) -> void:
@@ -66,6 +61,13 @@ func _update_display() -> void:
 				text += "\n%s戻る\n" % prefix
 	text += "\n(Esc: 保存して戻る)"
 	label.text = text
+
+
+func _go_back() -> void:
+	_save_settings()
+	var gm := get_node_or_null("/root/GameManager")
+	if gm:
+		gm.change_state(GMS.State.TITLE)
 
 
 func _save_settings() -> void:

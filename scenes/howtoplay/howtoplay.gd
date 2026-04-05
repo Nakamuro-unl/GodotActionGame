@@ -11,19 +11,34 @@ var _pages: Array[String] = []
 func _ready() -> void:
 	_build_pages()
 	_display_page()
+	$HBox/BtnPrev.pressed.connect(_prev_page)
+	$HBox/BtnNext.pressed.connect(_next_page)
+	$HBox/BtnBack.pressed.connect(_go_back)
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
-		var gm := get_node_or_null("/root/GameManager")
-		if gm:
-			gm.change_state(GMS.State.TITLE)
+		_go_back()
 	elif event.is_action_pressed("ui_right") or event.is_action_pressed("ui_accept"):
-		_page = mini(_page + 1, _pages.size() - 1)
-		_display_page()
+		_next_page()
 	elif event.is_action_pressed("ui_left"):
-		_page = maxi(_page - 1, 0)
-		_display_page()
+		_prev_page()
+
+
+func _next_page() -> void:
+	_page = mini(_page + 1, _pages.size() - 1)
+	_display_page()
+
+
+func _prev_page() -> void:
+	_page = maxi(_page - 1, 0)
+	_display_page()
+
+
+func _go_back() -> void:
+	var gm := get_node_or_null("/root/GameManager")
+	if gm:
+		gm.change_state(GMS.State.TITLE)
 
 
 func _display_page() -> void:
