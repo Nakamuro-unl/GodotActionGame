@@ -154,6 +154,11 @@ func _apply_platform_ui() -> void:
 		minimap_rect.offset_top = layout["minimap_y"]
 		minimap_rect.custom_minimum_size = Vector2(layout["minimap_size"], layout["minimap_size"])
 
+	# デバッグ情報: モバイルでは非表示
+	var debug_label: Label = $UILayer/DebugInfo
+	if debug_label:
+		debug_label.visible = (_platform == PlatformUI.Platform.PC)
+
 
 func _process(_delta: float) -> void:
 	var debug_label: Label = $UILayer/DebugInfo

@@ -74,13 +74,13 @@ static func get_hud_layout(platform: Platform) -> Dictionary:
 			}
 		Platform.MOBILE:
 			return {
-				"hud_top_y": 4,
+				"hud_top_y": 2,
 				"skill_slots_y": 350,
-				"message_log_y": 330,
+				"message_log_y": 285,
 				"key_hints_y": -1,  # 非表示
-				"minimap_x": -78,
-				"minimap_y": 22,
-				"minimap_size": 70,
+				"minimap_x": -68,
+				"minimap_y": 18,
+				"minimap_size": 60,
 			}
 	return {}
 

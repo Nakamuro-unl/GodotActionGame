@@ -15,11 +15,11 @@ zoom = Vector2(2, 2)
 [node name="UILayer" type="CanvasLayer" parent="."]
 
 [node name="HUD" type="Label" parent="UILayer"]
-offset_left = 8.0
-offset_top = 4.0
-offset_right = 632.0
-offset_bottom = 24.0
-theme_override_font_sizes/font_size = 12
+offset_left = 4.0
+offset_top = 2.0
+offset_right = 400.0
+offset_bottom = 18.0
+theme_override_font_sizes/font_size = 10
 text = "HP:30/30  MP:10/10  Lv:1  F:1F  Turn:0"
 
 [node name="SkillSlots" type="HBoxContainer" parent="UILayer"]
