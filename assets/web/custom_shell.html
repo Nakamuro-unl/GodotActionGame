@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
+	<title>$GODOT_PROJECT_NAME</title>
+	<style>
+		* { margin: 0; padding: 0; }
+		body { background: #0a0a14; overflow: hidden; touch-action: none; }
+		#canvas {
+			display: block;
+			margin: 0;
+			color: white;
+		}
+		#canvas:focus { outline: none; }
+		#status {
+			position: absolute;
+			left: 50%; top: 50%;
+			transform: translate(-50%, -50%);
+			text-align: center;
+			font-family: sans-serif;
+			color: #ccc;
+		}
+		#status-progress {
+			width: 200px;
+			height: 4px;
+			background: #222;
+			border-radius: 2px;
+			margin: 16px auto 0;
+			overflow: hidden;
+		}
+		#status-progress-inner {
+			height: 100%;
+			background: #f0c040;
+			width: 0%;
+			transition: width 0.2s;
+			border-radius: 2px;
+		}
+		#status-notice { display: none; margin-top: 12px; font-size: 12px; color: #888; }
+	</style>
+	$GODOT_HEAD_INCLUDE
+</head>
+<body>
+	<canvas id="canvas">
+		Your browser does not support the canvas tag.
+	</canvas>
+
+	<div id="status">
+		<div id="status-progress"><div id="status-progress-inner"></div></div>
+		<div id="status-notice"></div>
+	</div>
+
+	<script src="$GODOT_URL"></script>
+	<script>
+		const GODOT_CONFIG = $GODOT_CONFIG;
+		const engine = new Engine(GODOT_CONFIG);
+
+		const statusProgress = document.getElementById('status-progress');
+		const statusProgressInner = document.getElementById('status-progress-inner');
+		const statusNotice = document.getElementById('status-notice');
+
+		function setStatusMode(mode) {
+			if (mode === 'hidden') {
+				statusProgress.style.display = 'none';
+				statusNotice.style.display = 'none';
+			}
+		}
+
+		function setStatusNotice(text) {
+			if (text) {
+				statusNotice.style.display = 'block';
+				statusNotice.innerText = text;
+			}
+		}
+
+		function displayFailureNotice(err) {
+			const msg = err.message || err;
+			console.error(msg);
+			setStatusNotice('Error: ' + msg);
+		}
+
+		const canvas = document.getElementById('canvas');
+
+		function adjustCanvasSize() {
+			canvas.width = window.innerWidth;
+			canvas.height = window.innerHeight;
+		}
+		adjustCanvasSize();
+		window.addEventListener('resize', adjustCanvasSize);
+
+		engine.startGame({
+			'canvas': canvas,
+			'onProgress': function (current, total) {
+				if (total > 0) {
+					statusProgressInner.style.width = (current / total * 100) + '%';
+				}
+			},
+		}).then(() => {
+			setStatusMode('hidden');
+			canvas.focus();
+		}).catch((err) => {
+			displayFailureNotice(err);
+		});
+	</script>
+</body>
+</html>
