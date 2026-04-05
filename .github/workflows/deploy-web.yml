@@ -45,6 +45,6 @@ jobs:
         with:
           deploy_key: ${{ secrets.DEPLOY_KEY }}
           external_repository: Nakamuro-unl/mathmage-web
-          publish_branch: main
+          publish_branch: master
           publish_dir: ./builds/web
           commit_message: "deploy: auto build from ${{ github.sha }}"
