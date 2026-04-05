@@ -9,6 +9,7 @@ signal skill_pressed(slot_index: int)
 signal wait_pressed()
 signal interact_pressed()
 signal menu_pressed()
+signal item_pressed()
 
 var _face_mode: bool = false
 
@@ -29,6 +30,7 @@ func _ready() -> void:
 
 	$Actions/WaitButton.pressed.connect(func() -> void: wait_pressed.emit())
 	$Actions/InteractButton.pressed.connect(func() -> void: interact_pressed.emit())
+	$Actions/ItemButton.pressed.connect(func() -> void: item_pressed.emit())
 	$Actions/MenuButton.pressed.connect(func() -> void: menu_pressed.emit())
 
 

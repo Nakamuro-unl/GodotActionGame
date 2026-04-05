@@ -21,14 +21,53 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -200.0
-offset_top = -160.0
+offset_top = -170.0
 offset_right = 200.0
-offset_bottom = 160.0
+offset_bottom = 170.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Content" type="Label" parent="Panel"]
+[node name="VBox" type="VBoxContainer" parent="Panel"]
+layout_mode = 2
+
+[node name="Content" type="Label" parent="Panel/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 11
 autowrap_mode = 2
+size_flags_vertical = 3
 text = ""
+
+[node name="Buttons" type="HBoxContainer" parent="Panel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="BtnPrevTab" type="Button" parent="Panel/VBox/Buttons"]
+layout_mode = 2
+custom_minimum_size = Vector2(36, 28)
+text = "<"
+
+[node name="BtnUp" type="Button" parent="Panel/VBox/Buttons"]
+layout_mode = 2
+custom_minimum_size = Vector2(36, 28)
+text = "^"
+
+[node name="BtnDown" type="Button" parent="Panel/VBox/Buttons"]
+layout_mode = 2
+custom_minimum_size = Vector2(36, 28)
+text = "v"
+
+[node name="BtnAction" type="Button" parent="Panel/VBox/Buttons"]
+layout_mode = 2
+custom_minimum_size = Vector2(60, 28)
+text = "決定"
+
+[node name="BtnNextTab" type="Button" parent="Panel/VBox/Buttons"]
+layout_mode = 2
+custom_minimum_size = Vector2(36, 28)
+text = ">"
+
+[node name="BtnClose" type="Button" parent="Panel/VBox/Buttons"]
+layout_mode = 2
+custom_minimum_size = Vector2(50, 28)
+text = "閉じる"

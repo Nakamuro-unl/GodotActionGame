@@ -21,6 +21,16 @@ var _equippable: Array = []  # 装備可能な知識リスト
 
 func _ready() -> void:
 	visible = false
+	$Panel/VBox/Buttons/BtnPrevTab.pressed.connect(func() -> void:
+		_tab = (_tab - 1 + 3) % 3 as Tab; _cursor = 0; _update_display())
+	$Panel/VBox/Buttons/BtnNextTab.pressed.connect(func() -> void:
+		_tab = (_tab + 1) % 3 as Tab; _cursor = 0; _update_display())
+	$Panel/VBox/Buttons/BtnUp.pressed.connect(func() -> void:
+		_cursor = maxi(_cursor - 1, 0); _update_display())
+	$Panel/VBox/Buttons/BtnDown.pressed.connect(func() -> void:
+		_cursor += 1; _update_display())
+	$Panel/VBox/Buttons/BtnAction.pressed.connect(_on_accept)
+	$Panel/VBox/Buttons/BtnClose.pressed.connect(hide_inventory)
 
 
 func is_showing() -> bool:
@@ -138,7 +148,7 @@ func _refresh_equippable() -> void:
 
 
 func _update_display() -> void:
-	var label: Label = $Panel/Content
+	var label: Label = $Panel/VBox/Content
 	if label == null:
 		return
 

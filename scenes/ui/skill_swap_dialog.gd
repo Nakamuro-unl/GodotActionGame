@@ -17,6 +17,13 @@ var _player: Node = null
 
 func _ready() -> void:
 	visible = false
+	$Panel/VBox/Buttons/BtnUp.pressed.connect(func() -> void:
+		_cursor = maxi(_cursor - 1, 0); _update_display())
+	$Panel/VBox/Buttons/BtnDown.pressed.connect(func() -> void:
+		_cursor = mini(_cursor + 1, 6); _update_display())
+	$Panel/VBox/Buttons/BtnSelect.pressed.connect(_on_accept)
+	$Panel/VBox/Buttons/BtnCancel.pressed.connect(func() -> void:
+		hide_dialog(); cancelled.emit())
 
 
 func is_showing() -> bool:
@@ -72,7 +79,7 @@ func _on_accept() -> void:
 
 
 func _update_display() -> void:
-	var label: Label = $Panel/Content
+	var label: Label = $Panel/VBox/Content
 	if label == null:
 		return
 	var text: String = "-- 技スロットがいっぱい --\n\n"

@@ -131,23 +131,31 @@ offset_bottom = -16.0
 [node name="WaitButton" type="Button" parent="Actions"]
 offset_left = 0.0
 offset_top = 0.0
-offset_right = 56.0
+offset_right = 42.0
 offset_bottom = 32.0
 text = "待機"
-theme_override_font_sizes/font_size = 11
+theme_override_font_sizes/font_size = 10
 
 [node name="InteractButton" type="Button" parent="Actions"]
-offset_left = 62.0
+offset_left = 46.0
 offset_top = 0.0
-offset_right = 118.0
+offset_right = 92.0
 offset_bottom = 32.0
 text = "調べる"
-theme_override_font_sizes/font_size = 11
+theme_override_font_sizes/font_size = 10
+
+[node name="ItemButton" type="Button" parent="Actions"]
+offset_left = 96.0
+offset_top = 0.0
+offset_right = 138.0
+offset_bottom = 32.0
+text = "道具"
+theme_override_font_sizes/font_size = 10
 
 [node name="MenuButton" type="Button" parent="Actions"]
-offset_left = 124.0
+offset_left = 142.0
 offset_top = 0.0
-offset_right = 180.0
+offset_right = 184.0
 offset_bottom = 32.0
-text = "menu"
-theme_override_font_sizes/font_size = 11
+text = "装備"
+theme_override_font_sizes/font_size = 10

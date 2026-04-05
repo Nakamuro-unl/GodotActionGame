@@ -21,14 +21,43 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -150.0
-offset_top = -130.0
+offset_top = -140.0
 offset_right = 150.0
-offset_bottom = 130.0
+offset_bottom = 140.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="ItemList" type="Label" parent="Panel"]
+[node name="VBox" type="VBoxContainer" parent="Panel"]
+layout_mode = 2
+
+[node name="ItemList" type="Label" parent="Panel/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 11
 autowrap_mode = 2
+size_flags_vertical = 3
 text = ""
+
+[node name="Buttons" type="HBoxContainer" parent="Panel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="BtnUp" type="Button" parent="Panel/VBox/Buttons"]
+layout_mode = 2
+custom_minimum_size = Vector2(50, 30)
+text = "^"
+
+[node name="BtnUse" type="Button" parent="Panel/VBox/Buttons"]
+layout_mode = 2
+custom_minimum_size = Vector2(70, 30)
+text = "使う"
+
+[node name="BtnDown" type="Button" parent="Panel/VBox/Buttons"]
+layout_mode = 2
+custom_minimum_size = Vector2(50, 30)
+text = "v"
+
+[node name="BtnClose" type="Button" parent="Panel/VBox/Buttons"]
+layout_mode = 2
+custom_minimum_size = Vector2(60, 30)
+text = "閉じる"

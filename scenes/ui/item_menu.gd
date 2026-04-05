@@ -1,6 +1,6 @@
 extends CanvasLayer
 
-## アイテム選択メニュー。表示中は入力をブロック。
+## アイテム選択メニュー。タッチボタン+キーボード両対応。
 
 signal item_selected(index: int)
 signal closed()
@@ -14,6 +14,10 @@ var _cursor: int = 0
 
 func _ready() -> void:
 	visible = false
+	$Panel/VBox/Buttons/BtnUp.pressed.connect(_cursor_up)
+	$Panel/VBox/Buttons/BtnDown.pressed.connect(_cursor_down)
+	$Panel/VBox/Buttons/BtnUse.pressed.connect(_use_item)
+	$Panel/VBox/Buttons/BtnClose.pressed.connect(hide_menu)
 
 
 func is_showing() -> bool:
@@ -39,26 +43,37 @@ func hide_menu() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not _is_showing:
 		return
-
 	if event.is_action_pressed("ui_up"):
-		_cursor = (_cursor - 1 + _items.size()) % _items.size()
-		_update_display()
+		_cursor_up()
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("ui_down"):
-		_cursor = (_cursor + 1) % _items.size()
-		_update_display()
+		_cursor_down()
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("ui_accept"):
-		item_selected.emit(_cursor)
-		hide_menu()
+		_use_item()
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("ui_cancel"):
 		hide_menu()
 		get_viewport().set_input_as_handled()
 
 
+func _cursor_up() -> void:
+	_cursor = (_cursor - 1 + _items.size()) % _items.size()
+	_update_display()
+
+
+func _cursor_down() -> void:
+	_cursor = (_cursor + 1) % _items.size()
+	_update_display()
+
+
+func _use_item() -> void:
+	item_selected.emit(_cursor)
+	hide_menu()
+
+
 func _update_display() -> void:
-	var label: Label = $Panel/ItemList
+	var label: Label = $Panel/VBox/ItemList
 	if label == null:
 		return
 	var text: String = "-- アイテム (%d/%d) --\n\n" % [_items.size(), 10]
@@ -71,5 +86,4 @@ func _update_display() -> void:
 			text += "> %s\n  %s\n" % [name_str, desc]
 		else:
 			text += "  %s\n" % name_str
-	text += "\n(決定: 使用 / Esc: 閉じる)"
 	label.text = text

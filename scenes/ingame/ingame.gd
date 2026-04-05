@@ -65,6 +65,7 @@ func _ready() -> void:
 	_vpad.skill_pressed.connect(_do_skill)
 	_vpad.wait_pressed.connect(_do_wait)
 	_vpad.interact_pressed.connect(_do_interact)
+	_vpad.item_pressed.connect(_open_item_menu)
 	_vpad.menu_pressed.connect(_open_inventory)
 
 	_popup = PopupScene.instantiate()
