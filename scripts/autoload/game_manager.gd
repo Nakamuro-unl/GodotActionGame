@@ -6,6 +6,7 @@ extends Node
 signal state_changed(old_state: State, new_state: State)
 
 enum State {
+	SPLASH,
 	TITLE,
 	INGAME,
 	RESULT,
@@ -16,6 +17,7 @@ enum State {
 
 ## 許可された遷移テーブル
 const VALID_TRANSITIONS: Dictionary = {
+	State.SPLASH: [State.TITLE],
 	State.TITLE: [State.INGAME, State.RANKING, State.HOWTOPLAY, State.SETTINGS],
 	State.INGAME: [State.RESULT],
 	State.RESULT: [State.TITLE],
@@ -26,6 +28,7 @@ const VALID_TRANSITIONS: Dictionary = {
 
 ## シーンパステーブル
 const SCENE_PATHS: Dictionary = {
+	State.SPLASH: "res://scenes/splash/splash.tscn",
 	State.TITLE: "res://scenes/title/title.tscn",
 	State.INGAME: "res://scenes/ingame/ingame.tscn",
 	State.RESULT: "res://scenes/result/result.tscn",
@@ -34,7 +37,7 @@ const SCENE_PATHS: Dictionary = {
 	State.SETTINGS: "res://scenes/settings/settings.tscn",
 }
 
-var current_state: State = State.TITLE
+var current_state: State = State.SPLASH
 var should_load_save: bool = false
 var last_result: Dictionary = {}  # リザルト画面に渡すスコアデータ
 
