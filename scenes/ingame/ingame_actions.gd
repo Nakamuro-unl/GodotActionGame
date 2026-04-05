@@ -37,4 +37,4 @@ static func show_item_popup(popup: Node, item_id: String) -> void:
 static func use_item(item_sys: Node, session: Node, item_index: int, facing: Vector2i) -> Dictionary:
 	var target_pos: Vector2i = session.player.grid_pos + facing
 	var target_enemy: Node = session._get_enemy_at(target_pos)
-	return item_sys.use_item(session.player, item_index, target_enemy)
+	return item_sys.use_item(session.player, item_index, target_enemy, session)

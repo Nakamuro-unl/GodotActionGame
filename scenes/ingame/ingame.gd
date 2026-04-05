@@ -337,9 +337,15 @@ func _open_item_menu() -> void:
 
 
 func _on_item_selected(index: int) -> void:
+	var item_id: String = session.player.items[index] if index < session.player.items.size() else ""
 	var result: Dictionary = Actions.use_item(_item_sys, session, index, _facing)
 	if result["success"]:
 		_add_message(result["message"])
+		# 移動系アイテムは即座にマップ再描画
+		if item_id in ["return_wing", "warp_stone"]:
+			_renderer.update_entities_immediate(session.player.grid_pos, session.enemies, $Camera2D)
+		if item_id in ["map_piece", "clairvoyance"]:
+			_update_minimap()
 		session.score_system.register_turn()
 		session.turn_manager.execute_player_action()
 		_after_turn_animated()

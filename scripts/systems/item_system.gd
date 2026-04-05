@@ -28,6 +28,10 @@ const ITEM_DB: Dictionary = {
 	"exp_book":         {"name": "経験の書",       "type": "special", "effect": "exp",          "description": "経験値を50獲得する"},
 	"skill_book":       {"name": "技の書",         "type": "special", "effect": "skill",        "description": "未獲得の知識を1つ獲得する"},
 	"slot_expansion":   {"name": "スロット拡張",   "type": "special", "effect": "slot",         "description": "技スロットを1つ追加する"},
+	# 偽アイテム（使用するまで本物と区別できない）
+	"fake_herb":        {"name": "薬草",           "type": "fake", "real_effect": "poison",     "description": "HPを10回復する", "fake_desc": "毒薬草だった! HP -10"},
+	"fake_water":       {"name": "知恵の水",       "type": "fake", "real_effect": "confuse",    "description": "MPを5回復する",  "fake_desc": "混乱の水だった! 3ターン操作反転"},
+	"fake_scroll":      {"name": "零の巻物",       "type": "fake", "real_effect": "curse",      "description": "敵の数値を0にする", "fake_desc": "呪いの巻物だった! MPが0に"},
 }
 
 
@@ -36,7 +40,8 @@ const ITEM_DB: Dictionary = {
 ## item_index: items配列のインデックス
 ## target_enemy: 戦闘補助系の対象敵（なければnull）
 ## 戻り値: {"success": bool, "message": String, "item_id": String}
-func use_item(player: Node, item_index: int, target_enemy: Node) -> Dictionary:
+## session: 探索系アイテムでセッションにアクセスするため（nullならスキップ）
+func use_item(player: Node, item_index: int, target_enemy: Node, session: Node = null) -> Dictionary:
 	if item_index < 0 or item_index >= player.items.size():
 		return {"success": false, "message": "", "item_id": ""}
 
@@ -47,20 +52,17 @@ func use_item(player: Node, item_index: int, target_enemy: Node) -> Dictionary:
 	var info: Dictionary = ITEM_DB[item_id]
 	var item_type: String = info["type"]
 
-	# 戦闘補助系はターゲットが必要
 	if item_type == "combat" and target_enemy == null:
 		return {"success": false, "message": "対象の敵がいない", "item_id": item_id}
 
-	# 効果適用
-	var msg: String = _apply_effect(player, target_enemy, item_id, info)
+	var msg: String = _apply_effect(player, target_enemy, item_id, info, session)
 
-	# 消費
 	player.remove_item(item_index)
 
 	return {"success": true, "message": msg, "item_id": item_id}
 
 
-func _apply_effect(player: Node, enemy: Node, item_id: String, info: Dictionary) -> String:
+func _apply_effect(player: Node, enemy: Node, item_id: String, info: Dictionary, session: Node = null) -> String:
 	var item_type: String = info["type"]
 
 	match item_type:
@@ -79,7 +81,9 @@ func _apply_effect(player: Node, enemy: Node, item_id: String, info: Dictionary)
 		"special":
 			return _apply_special_effect(player, info)
 		"explore":
-			return "%s を使った!" % info["name"]
+			return _apply_explore_effect(player, info, session)
+		"fake":
+			return _apply_fake_effect(player, info)
 
 	return ""
 
@@ -110,6 +114,69 @@ func _apply_combat_effect(enemy: Node, info: Dictionary) -> String:
 			enemy.set_value(v / 2)
 			return "半減の砂! 数値: %d -> %d" % [v, enemy.value]
 	return ""
+
+
+func _apply_fake_effect(player: Node, info: Dictionary) -> String:
+	var effect: String = info["real_effect"]
+	match effect:
+		"poison":
+			player.take_damage(10)
+			return info["fake_desc"]
+		"confuse":
+			# 混乱状態（将来的にステータス異常として実装）
+			return info["fake_desc"]
+		"curse":
+			player.mp = 0
+			return info["fake_desc"]
+	return "偽物だった!"
+
+
+## 鑑定: 偽アイテムかどうか判定
+static func is_fake_item(item_id: String) -> bool:
+	if not ITEM_DB.has(item_id):
+		return false
+	return ITEM_DB[item_id]["type"] == "fake"
+
+
+## 鑑定済みの名前を返す
+static func get_identified_name(item_id: String) -> String:
+	if not ITEM_DB.has(item_id):
+		return item_id
+	var info: Dictionary = ITEM_DB[item_id]
+	if info["type"] == "fake":
+		match info["real_effect"]:
+			"poison": return "毒薬草"
+			"confuse": return "混乱の水"
+			"curse": return "呪いの巻物"
+	return info["name"]
+
+
+func _apply_explore_effect(player: Node, info: Dictionary, session: Node) -> String:
+	var effect: String = info["effect"]
+	match effect:
+		"reveal_map":
+			if session and session.minimap:
+				session.minimap.reveal_all()
+			return "マップの欠片! フロア全体が見えるようになった"
+		"reveal_all":
+			if session and session.minimap:
+				session.minimap.reveal_all()
+			return "千里眼! 全ての位置が見えるようになった"
+		"return":
+			if session:
+				var start: Vector2i = session.map_generator.get_player_start()
+				player.grid_pos = start
+			return "帰還の翼! 入口に戻った"
+		"warp":
+			if session:
+				var rooms: Array = session.map_generator.get_rooms()
+				if rooms.size() > 1:
+					var room: Rect2i = rooms[randi() % rooms.size()]
+					var x: int = room.position.x + room.size.x / 2
+					var y: int = room.position.y + room.size.y / 2
+					player.grid_pos = Vector2i(x, y)
+			return "ワープの石! 別の部屋に移動した"
+	return "%s を使った!" % info["name"]
 
 
 func _apply_special_effect(player: Node, info: Dictionary) -> String:

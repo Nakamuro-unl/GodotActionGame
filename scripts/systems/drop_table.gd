@@ -182,4 +182,8 @@ func _default_item_table() -> Array:
 		{"id": "exp_book",         "rarity": "uncommon",  "weight": 15, "min_stage": 2},
 		{"id": "skill_book",       "rarity": "rare",      "weight": 8,  "min_stage": 3},
 		{"id": "slot_expansion",   "rarity": "rare",      "weight": 5,  "min_stage": 2},
+		# 偽アイテム（ステージ3以降）
+		{"id": "fake_herb",        "rarity": "uncommon",  "weight": 12, "min_stage": 3},
+		{"id": "fake_water",       "rarity": "uncommon",  "weight": 10, "min_stage": 3},
+		{"id": "fake_scroll",      "rarity": "rare",      "weight": 5,  "min_stage": 4},
 	]
