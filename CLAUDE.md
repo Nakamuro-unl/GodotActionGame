@@ -62,8 +62,33 @@ tests/            -- GdUnit4テスト
 docs/
   specs/          -- 仕様書（150行以下に分割）
   gdscript_performance_guide.md
-assets/sprites/   -- 128x128スプライト、1024x1024アトラス
+assets/
+  sprites/        -- 128x128スプライト、1024x1280アトラス(69タイル)
+  sounds/         -- SE(10種) + BGM(7トラック) WAV
+  fonts/          -- NotoSansCJKjp-Medium + デフォルトテーマ
+  web/            -- カスタムHTMLシェル
 reports/          -- 操作ログ
+docs/guide/       -- 攻略サイト(HTML)
+scripts/build/    -- ビルド/デプロイスクリプト
+.github/workflows/ -- CI/CD(テスト→Webビルド→GitHub Pagesデプロイ)
+```
+
+## ビルド
+
+```bash
+# テストのみ
+./scripts/build/build.sh test
+
+# iOS
+./scripts/build/build.sh ios
+
+# Android
+./scripts/build/build.sh android
+
+# Web + GitHub Pagesデプロイ
+./scripts/build/deploy_web.sh
+
+# CI: masterにpushすると自動でテスト→Webビルド→デプロイ
 ```
 
 ## 操作ルール（CLAUDE.mdより継承）

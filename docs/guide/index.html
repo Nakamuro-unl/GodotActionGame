@@ -164,6 +164,8 @@ footer {
   <li><a href="#items">アイテム</a></li>
   <li><a href="#enemies">敵一覧</a></li>
   <li><a href="#gimmicks">ギミック</a></li>
+  <li><a href="#range">範囲攻撃</a></li>
+  <li><a href="#fake-items">偽アイテム</a></li>
   <li><a href="#strategy">攻略Tips</a></li>
 </ul>
 </nav>
@@ -607,24 +609,94 @@ footer {
 </table>
 </section>
 
+<!-- ===== 範囲攻撃 ===== -->
+<section id="range">
+<h2>範囲攻撃（関数グラフ技）<span class="tag tag-stage">Coming Soon</span></h2>
+<p>関数のグラフをフィールド上に描画し、軌道上の全敵にヒットする範囲攻撃。</p>
+
+<div class="card-grid">
+  <div class="card">
+    <img src="../../assets/sprites/math_equation.png" alt="一次関数">
+    <div class="card-body">
+      <div class="card-title">リニアストライク (y=ax+b)</div>
+      <div class="card-sub">射程8マス直線 / -5 / MP:4 / Stage3</div>
+      <div class="card-desc">向き方向に直線を伸ばし、貫通して全敵にヒット。</div>
+    </div>
+  </div>
+  <div class="card">
+    <img src="../../assets/sprites/math_square.png" alt="二次関数">
+    <div class="card-body">
+      <div class="card-title">パラボラショット (y=x^2)</div>
+      <div class="card-sub">前方6マス放物線 / -3 / MP:6 / Stage3</div>
+      <div class="card-desc">前方に放物線を描き、曲線上の全敵にヒット。</div>
+    </div>
+  </div>
+  <div class="card">
+    <img src="../../assets/sprites/math_topology.png" alt="sin">
+    <div class="card-body">
+      <div class="card-title">ウェーブアタック (y=sin(x))</div>
+      <div class="card-sub">前方8マス波形 / -4 / MP:7 / Stage4</div>
+      <div class="card-desc">左右に波打つ軌道で広範囲をカバー。</div>
+    </div>
+  </div>
+  <div class="card">
+    <img src="../../assets/sprites/math_topology.png" alt="円">
+    <div class="card-body">
+      <div class="card-title">サークルバースト (x^2+y^2=r^2)</div>
+      <div class="card-sub">半径2マス円形 / -3 / MP:8 / Stage4</div>
+      <div class="card-desc">プレイヤー中心に円を描き、周囲全敵にヒット。</div>
+    </div>
+  </div>
+  <div class="card">
+    <img src="../../assets/sprites/math_log.png" alt="指数">
+    <div class="card-body">
+      <div class="card-title">エクスポネンシャル (y=2^x)</div>
+      <div class="card-sub">前方5マス / 距離増加 / MP:10 / Stage5</div>
+      <div class="card-desc">距離に応じてダメージ増加(1,2,4,8...)。遠い敵ほど痛い。</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ===== 偽アイテム ===== -->
+<section id="fake-items">
+<h2>偽アイテム</h2>
+<p>ステージ3以降で出現。使用するまで本物と区別できない。</p>
+
+<table>
+<tr><th>偽名</th><th>本物と同じ見た目</th><th>実際の効果</th><th>出現</th></tr>
+<tr><td>毒薬草</td><td>薬草</td><td>HP -10</td><td>Stage3+</td></tr>
+<tr><td>混乱の水</td><td>知恵の水</td><td>3ターン操作反転</td><td>Stage3+</td></tr>
+<tr><td>呪いの巻物</td><td>零の巻物</td><td>MPが0になる</td><td>Stage4+</td></tr>
+</table>
+</section>
+
 <!-- ===== 攻略Tips ===== -->
 <section id="strategy">
 <h2>攻略Tips</h2>
 
 <div class="tip-box">
-  <strong>序盤 (1F-5F):</strong> -1だけで進む。子狼(1-2)は楽に倒せる。宝箱で「繰り下がり(-5)」が出たら即装備。熊(4-8)は無理せず回避してもOK。レベルアップでHP/MP全回復するのでタイミングを計ろう。
+  <strong>序盤 (1F-5F):</strong> 技なしでスタート。開始部屋の宝箱で「減法(-1)」を入手。子狼(1-2)は-1で1-2ターン。宝箱で「繰り下がり(-5)」が出たらラッキー! 熊(4-8)は無理せず回避してもOK。
 </div>
 
 <div class="tip-box">
-  <strong>中盤 (6F-15F):</strong> /2(ハーフ)が手に入ると世界が変わる。大きい数値の敵は /2 を連打して小さくしてから -1 で仕留める。%4(モジュロ)は4の倍数の敵に即効。偶数の粉 + /2 のコンボも強力。
+  <strong>中盤 (6F-15F):</strong> /2(ハーフ)が手に入ると世界が変わる。大きい数値の敵は /2 を連打して小さくしてから -1 で仕留める。%4(モジュロ)は4の倍数の敵に即効。偶数の粉 + /2 のコンボも強力。ステージが変わるとマップの見た目も変化!
 </div>
 
 <div class="tip-box">
-  <strong>終盤 (16F-25F):</strong> derivative(桁数変換)とintegral(各桁合計)が強い。100 -> derivative -> 3 -> -1x3 で撃破。identity(n/n=1)は全ての敵を1にできる最高の汎用技。ゼロ乗算はボス戦に温存。
+  <strong>終盤 (16F-25F):</strong> derivative(桁数変換)とintegral(各桁合計)が強い。100 -> derivative -> 3 -> -1x3 で撃破。identity(n/n=1)は全ての敵を1にできる最高の汎用技。ゼロ乗算(x0)はボス戦に温存（全ゲーム通して3回限定）。
 </div>
 
 <div class="warn-box">
   <strong>幽霊化に注意:</strong> 数値を負にすると幽霊化。幽霊は壁を通過してくるので厄介。abs()で正に戻してから処理するか、+系の技で0に調整する。幽霊化させるとコンボがリセットされるのでスコアにも影響。
+</div>
+
+<div class="warn-box">
+  <strong>偽アイテムに注意:</strong> ステージ3以降、薬草や知恵の水に見せかけた偽物が出現。使うまで見分けがつかない。HPに余裕がある時に試すのが安全。
+</div>
+
+<div class="tip-box">
+  <strong>敵との初遭遇:</strong> 敵と隣接した最初のターンは攻撃されない。落ち着いて向きを合わせてから技を使おう。
 </div>
 
 <div class="tip-box">
@@ -636,15 +708,17 @@ footer {
     <li>計算機械(100): derivative -> 3 -> -1 x3、または /2 連打</li>
     <li>宇宙神(256): log2 -> 8 -> /2 x3 -> 1 -> -1、またはゼロ乗算</li>
   </ul>
+  <p style="margin-top:8px">ボスは数値が半分以下で攻撃力1.5倍 + 3ターン毎に特殊技を使用!</p>
 </div>
 
 <div class="tip-box">
   <strong>スコアを伸ばすコツ:</strong>
   <ul style="margin-top:8px">
-    <li>ぴったり0撃破を連続してコンボを稼ぐ</li>
-    <li>幽霊化を避ける（ペナルティ -50/回、コンボリセット）</li>
-    <li>ターン数を少なくする（ペナルティ -2/ターン）</li>
-    <li>宝箱は全て開けて知識収集率を上げる（+200/個）</li>
+    <li>ぴったり0撃破を連続してコンボを稼ぐ（x150ボーナス）</li>
+    <li>幽霊化を避ける（ペナルティ -30/回、コンボリセット）</li>
+    <li>ターン数を少なくする（ペナルティ -1/ターン）</li>
+    <li>宝箱は全て開けて知識収集率を上げる（+300/個）</li>
+    <li>ボス撃破で+5000ボーナス</li>
   </ul>
 </div>
 </section>
