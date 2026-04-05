@@ -394,6 +394,7 @@ func _on_player_damaged_visual(_amount: int) -> void:
 
 func _on_game_over() -> void:
 	_store_result(false)
+	_audio.stop_bgm()
 	_audio.play("gameover")
 	_game_over_effect.play()
 
@@ -432,3 +433,9 @@ func _on_floor_changed(floor_number: int, stage: int) -> void:
 	var stage_names: Array[String] = ["", "石器時代", "古代文明", "中世", "近代", "宇宙"]
 	var stage_name: String = stage_names[stage] if stage < stage_names.size() else "???"
 	_add_message("ステージ%d - %s %dF" % [stage, stage_name, floor_number])
+	# ステージ別BGM
+	var is_boss_floor: bool = floor_number % 5 == 0
+	if is_boss_floor:
+		_audio.play_bgm("boss")
+	else:
+		_audio.play_bgm("stage%d" % stage)

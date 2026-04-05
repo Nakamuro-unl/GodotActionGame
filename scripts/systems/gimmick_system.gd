@@ -107,11 +107,54 @@ func try_resolve(pos: Vector2i, knowledge_system: Node, grid: Array) -> Dictiona
 	if pos.y >= 0 and pos.y < grid.size() and pos.x >= 0 and pos.x < grid[0].size():
 		grid[pos.y][pos.x] = MG.Tile.FLOOR
 
+	# 隠し部屋を生成（ギミックの先に3x3の部屋+宝箱）
+	var chest_pos: Vector2i = _generate_hidden_room(pos, grid)
+
 	var msg: String = GIMMICK_MESSAGES.get(gtype, "ギミックを解除した!")
+	if chest_pos != Vector2i.ZERO:
+		msg += " 隠し部屋を発見!"
 	_gimmicks.erase(pos)
 	gimmick_resolved.emit(pos, gtype)
 
-	return {"success": true, "message": msg}
+	return {"success": true, "message": msg, "chest_pos": chest_pos}
+
+
+## ギミックの先に隠し部屋（3x3）を生成し、中央に宝箱を配置
+func _generate_hidden_room(gimmick_pos: Vector2i, grid: Array) -> Vector2i:
+	var h: int = grid.size()
+	var w: int = grid[0].size()
+	# ギミック位置から離れた方向を探す（部屋の外側に掘る）
+	var directions: Array[Vector2i] = [Vector2i.UP, Vector2i.DOWN, Vector2i.LEFT, Vector2i.RIGHT]
+	for dir in directions:
+		var room_center: Vector2i = gimmick_pos + dir * 2
+		# 3x3が収まるか確認
+		if room_center.x < 2 or room_center.x >= w - 2:
+			continue
+		if room_center.y < 2 or room_center.y >= h - 2:
+			continue
+		# 3x3がすべて壁か確認（既存の部屋と被らない）
+		var all_wall: bool = true
+		for dy in range(-1, 2):
+			for dx in range(-1, 2):
+				if grid[room_center.y + dy][room_center.x + dx] != MG.Tile.WALL:
+					all_wall = false
+					break
+			if not all_wall:
+				break
+		if not all_wall:
+			continue
+		# 3x3を床にする
+		for dy in range(-1, 2):
+			for dx in range(-1, 2):
+				grid[room_center.y + dy][room_center.x + dx] = MG.Tile.FLOOR
+		# 通路（ギミック位置と部屋を接続）
+		var corridor: Vector2i = gimmick_pos + dir
+		if corridor.y >= 0 and corridor.y < h and corridor.x >= 0 and corridor.x < w:
+			grid[corridor.y][corridor.x] = MG.Tile.FLOOR
+		# 中央に宝箱
+		grid[room_center.y][room_center.x] = MG.Tile.CHEST
+		return room_center
+	return Vector2i.ZERO
 
 
 ## ステージに対応するギミックタイプ一覧

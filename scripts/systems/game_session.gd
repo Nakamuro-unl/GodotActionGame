@@ -232,6 +232,10 @@ func _try_resolve_gimmick(pos: Vector2i) -> Dictionary:
 	var result: Dictionary = gimmick_system.try_resolve(pos, knowledge_system, grid)
 	message.emit(result["message"])
 	if result["success"]:
+		# 隠し部屋の宝箱を登録
+		var chest_pos: Vector2i = result.get("chest_pos", Vector2i.ZERO)
+		if chest_pos != Vector2i.ZERO:
+			chest_positions.append(chest_pos)
 		return {"type": "gimmick_resolved", "message": result["message"]}
 	return {"type": "gimmick_failed", "message": result["message"]}
 
@@ -253,12 +257,24 @@ func _on_enemy_phase() -> void:
 				occupied.append(other.grid_pos)
 		enemy.decide_move(player.grid_pos, grid, occupied)
 
+		# 吸引処理（ブラックホール等）
+		if enemy.pull_target != Vector2i(-1, -1):
+			var pt: Vector2i = enemy.pull_target
+			if pt.x >= 0 and pt.x < grid[0].size() and pt.y >= 0 and pt.y < grid.size():
+				if grid[pt.y][pt.x] != MapGen.Tile.WALL and not _is_occupied(pt):
+					player.grid_pos = pt
+					minimap.explore_around(player.grid_pos, 4)
+					message.emit("%s に引き寄せられた!" % enemy.enemy_name)
+
 		if _is_adjacent(enemy.grid_pos, player.grid_pos):
 			var dmg: int = combat_system.calculate_damage(enemy, player)
 			if dmg > 0:
 				player.take_damage(dmg)
 				player_damaged_visual.emit(dmg)
-				message.emit("%s の攻撃! %d ダメージ!" % [enemy.enemy_name, dmg])
+				if enemy.boss_special_text != "":
+					message.emit("%s %s %dダメージ!" % [enemy.enemy_name, enemy.boss_special_text, dmg])
+				else:
+					message.emit("%s の攻撃! %dダメージ!" % [enemy.enemy_name, dmg])
 
 
 func _on_environment_phase() -> void:

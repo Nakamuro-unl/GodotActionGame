@@ -107,14 +107,33 @@ func process_ghost_recovery() -> void:
 
 # --- 攻撃 ---
 
+## ボスの3ターン毎特殊技の結果（GameSessionが参照）
+var boss_special_text: String = ""
+
 func get_attack_damage() -> int:
 	if state == EnemyState.GHOST or state == EnemyState.DEFEATED:
 		return 0
+	var base: int = attack_power
 	# ボス: 数値が初期値の半分以下で攻撃力1.5倍
 	if ai_pattern == AIPattern.BOSS and _initial_value > 0:
 		if value <= _initial_value / 2:
-			return int(attack_power * 1.5)
-	return attack_power
+			base = int(attack_power * 1.5)
+	# ボス: 3ターン毎に特殊技（追加ダメージ）
+	if ai_pattern == AIPattern.BOSS and _turn_counter > 0 and _turn_counter % 3 == 0:
+		boss_special_text = _get_boss_special_name()
+		return base + attack_power / 2  # 通常の1.5倍ダメージ
+	boss_special_text = ""
+	return base
+
+
+func _get_boss_special_name() -> String:
+	match enemy_name:
+		"原始の王": return "原始の咆哮!"
+		"スフィンクス": return "謎かけの呪い!"
+		"魔王": return "暗黒の波動!"
+		"計算機械": return "電磁パルス!"
+		"宇宙神": return "次元崩壊!"
+	return "特殊攻撃!"
 
 
 # --- 移動判定 ---
@@ -148,19 +167,19 @@ func decide_move(player_pos: Vector2i, grid: Array, occupied: Array[Vector2i]) -
 		AIPattern.SLOW_CHASE:
 			_move_slow_chase(player_pos, grid, occupied)
 		AIPattern.CHARGE:
-			_move_chase(player_pos, grid, occupied)
+			_move_charge(player_pos, grid, occupied)
 		AIPattern.SMART_CHASE:
-			_move_chase(player_pos, grid, occupied)
+			_move_smart_chase(player_pos, grid, occupied)
 		AIPattern.PATROL:
-			_move_chase(player_pos, grid, occupied)
+			_move_patrol(player_pos, grid, occupied)
 		AIPattern.FLEE:
 			_move_flee(player_pos, grid, occupied)
 		AIPattern.WARP:
 			_move_warp(grid, occupied)
 		AIPattern.STATIONARY:
-			pass  # 動かない
+			_move_stationary(player_pos, grid, occupied)
 		AIPattern.BOSS:
-			_move_chase(player_pos, grid, occupied)
+			_move_smart_chase(player_pos, grid, occupied)
 
 	_turn_counter += 1
 
@@ -214,6 +233,80 @@ func _move_warp(grid: Array, occupied: Array[Vector2i]) -> void:
 		if grid[y][x] == MG.Tile.FLOOR and not pos in occupied:
 			grid_pos = pos
 			return
+
+
+## 突進: プレイヤーと同じ行or列なら直線突進、それ以外は通常追跡
+func _move_charge(player_pos: Vector2i, grid: Array, occupied: Array[Vector2i]) -> void:
+	var diff: Vector2i = player_pos - grid_pos
+	# 同じ行 or 列にいるか
+	if diff.x == 0 or diff.y == 0:
+		var dir: Vector2i
+		if diff.x == 0:
+			dir = Vector2i(0, signi(diff.y))
+		else:
+			dir = Vector2i(signi(diff.x), 0)
+		# 直線上に障害物がないか確認
+		var check: Vector2i = grid_pos + dir
+		if can_walk_to(check, grid) and not check in occupied and check != player_pos:
+			grid_pos = check
+			return
+	_move_chase(player_pos, grid, occupied)
+
+
+## A*風の賢い追跡: BFSで最短経路の最初の1歩を進む
+func _move_smart_chase(player_pos: Vector2i, grid: Array, occupied: Array[Vector2i]) -> void:
+	var directions: Array[Vector2i] = [Vector2i.UP, Vector2i.DOWN, Vector2i.LEFT, Vector2i.RIGHT]
+	var visited: Dictionary = {}
+	var parent: Dictionary = {}  # pos -> prev_pos
+	var queue: Array[Vector2i] = [grid_pos]
+	visited[grid_pos] = true
+
+	while not queue.is_empty():
+		var current: Vector2i = queue.pop_front()
+		if current == player_pos:
+			# 経路を逆追跡して最初の1歩を見つける
+			var step: Vector2i = current
+			while parent.has(step) and parent[step] != grid_pos:
+				step = parent[step]
+			if step != grid_pos and not step in occupied and step != player_pos:
+				grid_pos = step
+			return
+		for dir in directions:
+			var next: Vector2i = current + dir
+			if visited.has(next):
+				continue
+			if next.x < 0 or next.x >= grid[0].size() or next.y < 0 or next.y >= grid.size():
+				continue
+			if next != player_pos and not can_walk_to(next, grid):
+				continue
+			visited[next] = true
+			parent[next] = current
+			queue.append(next)
+	# BFS失敗時は通常追跡にフォールバック
+	_move_chase(player_pos, grid, occupied)
+
+
+## 巡回: プレイヤーが5タイル以内なら追跡、それ以外はランダム移動
+func _move_patrol(player_pos: Vector2i, grid: Array, occupied: Array[Vector2i]) -> void:
+	var dist: int = absi(player_pos.x - grid_pos.x) + absi(player_pos.y - grid_pos.y)
+	if dist <= 5:
+		_move_chase(player_pos, grid, occupied)
+	else:
+		_move_random(player_pos, grid, occupied)
+
+
+## 静止+吸引: 動かないが半径3タイル内のプレイヤーに影響（シグナルで通知）
+## 実際の引き寄せはGameSession側で処理する
+var pull_target: Vector2i = Vector2i(-1, -1)  # 吸引先（GameSessionが参照）
+
+func _move_stationary(player_pos: Vector2i, _grid: Array, _occupied: Array[Vector2i]) -> void:
+	var dist: int = absi(player_pos.x - grid_pos.x) + absi(player_pos.y - grid_pos.y)
+	if dist <= 3 and dist > 0:
+		# プレイヤーを1マス引き寄せる方向を記録
+		var dir: Vector2i = _get_direction_toward(player_pos)
+		pull_target = player_pos - dir  # プレイヤーが1歩こちらに近づく位置
+	else:
+		pull_target = Vector2i(-1, -1)
 
 
 func _is_adjacent_to(pos: Vector2i) -> bool:
