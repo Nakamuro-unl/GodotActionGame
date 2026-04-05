@@ -9,11 +9,28 @@ const Data = preload("res://scenes/ingame/ingame_data.gd")
 static func update_status_bar(hud_label: Label, player: Node, session: Node, facing_name: String) -> void:
 	var combo_text: String = ""
 	if session.score_system.combo_count > 0:
-		combo_text = "  Combo: %d" % session.score_system.combo_count
-	hud_label.text = "HP:%d/%d  MP:%d/%d  Lv:%d  F:%dF  Turn:%d  [%s]%s" % [
-		player.hp, player.max_hp, player.mp, player.max_mp, player.level,
+		combo_text = "  Combo:%d" % session.score_system.combo_count
+	hud_label.text = "Lv:%d  F:%dF  Turn:%d  [%s]%s" % [
+		player.level,
 		session.current_floor, session.turn_manager.turn_count, facing_name, combo_text
 	]
+
+
+static func update_gauges(ui_layer: Node, player: Node) -> void:
+	var hp_bar: ProgressBar = ui_layer.get_node_or_null("HPBar")
+	var hp_label: Label = ui_layer.get_node_or_null("HPLabel")
+	var mp_bar: ProgressBar = ui_layer.get_node_or_null("MPBar")
+	var mp_label: Label = ui_layer.get_node_or_null("MPLabel")
+	if hp_bar:
+		hp_bar.max_value = player.max_hp
+		hp_bar.value = player.hp
+	if hp_label:
+		hp_label.text = "HP %d/%d" % [player.hp, player.max_hp]
+	if mp_bar:
+		mp_bar.max_value = player.max_mp
+		mp_bar.value = player.mp
+	if mp_label:
+		mp_label.text = "MP %d/%d" % [player.mp, player.max_mp]
 
 
 static func update_skill_slots(container: HBoxContainer, player: Node, session: Node) -> void:

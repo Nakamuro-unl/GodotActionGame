@@ -36,6 +36,9 @@ var _screen_fx: Node = null
 var _renderer: Renderer
 var _audio: Node
 var _platform: int = PlatformUI.Platform.PC
+var _touch_start: Vector2 = Vector2.ZERO
+var _is_touching: bool = false
+const SWIPE_THRESHOLD: float = 30.0
 
 
 func _ready() -> void:
@@ -181,6 +184,22 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _inventory and _inventory.is_showing():
 		return
 	if _skill_swap and _skill_swap.is_showing():
+		return
+
+	# タッチスワイプで移動
+	if event is InputEventScreenTouch:
+		if event.pressed:
+			_touch_start = event.position
+			_is_touching = true
+		else:
+			if _is_touching:
+				var diff: Vector2 = event.position - _touch_start
+				if diff.length() > SWIPE_THRESHOLD:
+					if absf(diff.x) > absf(diff.y):
+						_do_move(Vector2i.RIGHT if diff.x > 0 else Vector2i.LEFT)
+					else:
+						_do_move(Vector2i.DOWN if diff.y > 0 else Vector2i.UP)
+			_is_touching = false
 		return
 
 	if event is InputEventKey and event.pressed and event.shift_pressed:
@@ -374,6 +393,7 @@ func _on_item_selected(index: int) -> void:
 func _update_hud() -> void:
 	var p: Node = session.player
 	HudHelper.update_status_bar($UILayer/HUD, p, session, _direction_name(_facing))
+	HudHelper.update_gauges($UILayer, p)
 	HudHelper.update_skill_slots($UILayer/SkillSlots, p, session)
 	HudHelper.update_vpad(_vpad, p, session)
 

@@ -101,6 +101,13 @@ func _unequip_selected_slot() -> void:
 		return
 	if _cursor < 0 or _cursor >= _player.skill_slots.size():
 		return
+	# 最低1つは技を保持（最後の1つは解除不可）
+	var equipped_count: int = 0
+	for s in _player.skill_slots:
+		if s != null and s != "":
+			equipped_count += 1
+	if equipped_count <= 1:
+		return  # 最後の1つなので解除不可
 	_player.unequip_skill(_cursor)
 	_refresh_equippable()
 	_update_display()
