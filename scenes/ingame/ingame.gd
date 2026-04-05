@@ -109,7 +109,7 @@ func _ready() -> void:
 	if not loaded:
 		session.start_new_game(randi())
 
-	_renderer.rebuild_map(session.grid)
+	_renderer.rebuild_map(session.grid, session.current_stage)
 	_renderer.update_entities_immediate(session.player.grid_pos, session.enemies, $Camera2D)
 	_update_hud()
 	_update_minimap()
@@ -280,22 +280,22 @@ func _do_interact() -> void:
 		"stairs":
 			_screen_fx.fade_transition(0.6)
 			await _screen_fx.fade_completed
-			_renderer.rebuild_map(session.grid)
+			_renderer.rebuild_map(session.grid, session.current_stage)
 			_renderer.update_entities_immediate(session.player.grid_pos, session.enemies, $Camera2D)
 			_update_hud()
 			_update_minimap()
 		"chest_knowledge":
 			_audio.play("chest")
-			_renderer.rebuild_map(session.grid)
+			_renderer.rebuild_map(session.grid, session.current_stage)
 			_update_hud()
 			_show_knowledge_popup(result.get("knowledge_id", ""))
 		"chest_item":
 			_audio.play("chest")
-			_renderer.rebuild_map(session.grid)
+			_renderer.rebuild_map(session.grid, session.current_stage)
 			_update_hud()
 			_show_item_popup(result.get("item_id", ""))
 		"gimmick_resolved":
-			_renderer.rebuild_map(session.grid)
+			_renderer.rebuild_map(session.grid, session.current_stage)
 			_update_hud()
 
 

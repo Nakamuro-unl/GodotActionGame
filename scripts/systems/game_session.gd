@@ -267,7 +267,9 @@ func _on_enemy_phase() -> void:
 					minimap.explore_around(player.grid_pos, 4)
 					message.emit("%s に引き寄せられた!" % enemy.enemy_name)
 
-		if _is_adjacent(enemy.grid_pos, player.grid_pos):
+		var is_adj: bool = _is_adjacent(enemy.grid_pos, player.grid_pos)
+		if is_adj and enemy.was_adjacent:
+			# 前ターンも隣接していた場合のみ攻撃（初回接触は攻撃しない）
 			var dmg: int = combat_system.calculate_damage(enemy, player)
 			if dmg > 0:
 				player.take_damage(dmg)
@@ -276,6 +278,7 @@ func _on_enemy_phase() -> void:
 					message.emit("%s %s %dダメージ!" % [enemy.enemy_name, enemy.boss_special_text, dmg])
 				else:
 					message.emit("%s の攻撃! %dダメージ!" % [enemy.enemy_name, dmg])
+		enemy.was_adjacent = is_adj
 
 
 func _on_environment_phase() -> void:

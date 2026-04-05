@@ -54,7 +54,8 @@ var ai_pattern: AIPattern = AIPattern.CHASE
 var state: EnemyState = EnemyState.NORMAL
 var grid_pos: Vector2i = Vector2i.ZERO
 var _turn_counter: int = 0
-var _initial_value: int = 0  # ボス用: 初期数値を記録
+var _initial_value: int = 0
+var was_adjacent: bool = false  # 前ターンで隣接していたか（初回接触は攻撃しない）
 
 static var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 

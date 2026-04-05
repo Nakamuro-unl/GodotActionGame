@@ -10,8 +10,17 @@ const SPRITE_SCALE: float = 16.0 / 128.0
 const MOVE_DURATION: float = 0.12
 const ATLAS_TILE_SIZE: int = 128
 const ATLAS_COLS: int = 8
-const ATLAS_TILE_COUNT: int = 61
+const ATLAS_TILE_COUNT: int = 69
 const TILESET_SOURCE_ID: int = 0
+
+const STAGE_TILE_INDEX: Dictionary = {
+	1: {"wall": 0, "floor": 1},
+	2: {"wall": 61, "floor": 62},
+	3: {"wall": 63, "floor": 64},
+	4: {"wall": 65, "floor": 66},
+	5: {"wall": 67, "floor": 68},
+}
+var _current_stage: int = 1
 
 var tex_player_down: Texture2D
 var tex_player_up: Texture2D
@@ -103,7 +112,8 @@ func grid_to_world(grid_pos: Vector2i) -> Vector2:
 
 # --- マップ描画 ---
 
-func rebuild_map(grid: Array) -> void:
+func rebuild_map(grid: Array, stage: int = 1) -> void:
+	_current_stage = stage
 	tile_map.clear()
 	for y in MapGen.GRID_HEIGHT:
 		for x in MapGen.GRID_WIDTH:
@@ -116,10 +126,11 @@ func rebuild_map(grid: Array) -> void:
 
 
 func _tile_to_atlas_index(tile: int) -> int:
+	var stage_tiles: Dictionary = STAGE_TILE_INDEX.get(_current_stage, STAGE_TILE_INDEX[1])
 	match tile:
-		MapGen.Tile.WALL: return 0
-		MapGen.Tile.FLOOR: return 1
-		MapGen.Tile.CORRIDOR: return 2
+		MapGen.Tile.WALL: return stage_tiles["wall"]
+		MapGen.Tile.FLOOR: return stage_tiles["floor"]
+		MapGen.Tile.CORRIDOR: return stage_tiles["floor"]  # 通路もステージ床色
 		MapGen.Tile.STAIRS: return 3
 		MapGen.Tile.CHEST: return 4
 		MapGen.Tile.TRAP: return 5

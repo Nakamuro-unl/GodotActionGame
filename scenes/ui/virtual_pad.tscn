@@ -10,53 +10,53 @@ script = ExtResource("1_vpad")
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
-offset_left = 16.0
-offset_top = -180.0
-offset_right = 176.0
-offset_bottom = -16.0
+offset_left = 8.0
+offset_top = -130.0
+offset_right = 128.0
+offset_bottom = -8.0
 
 [node name="Up" type="Button" parent="DPad"]
-offset_left = 48.0
+offset_left = 36.0
 offset_top = 0.0
-offset_right = 112.0
-offset_bottom = 48.0
+offset_right = 84.0
+offset_bottom = 36.0
 text = "^"
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 14
 
 [node name="Down" type="Button" parent="DPad"]
-offset_left = 48.0
-offset_top = 104.0
-offset_right = 112.0
-offset_bottom = 152.0
+offset_left = 36.0
+offset_top = 80.0
+offset_right = 84.0
+offset_bottom = 116.0
 text = "v"
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 14
 
 [node name="Left" type="Button" parent="DPad"]
 offset_left = 0.0
-offset_top = 52.0
-offset_right = 48.0
-offset_bottom = 100.0
+offset_top = 40.0
+offset_right = 36.0
+offset_bottom = 76.0
 text = "<"
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 14
 
 [node name="Right" type="Button" parent="DPad"]
-offset_left = 112.0
-offset_top = 52.0
-offset_right = 160.0
-offset_bottom = 100.0
+offset_left = 84.0
+offset_top = 40.0
+offset_right = 120.0
+offset_bottom = 76.0
 text = ">"
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 14
 
 [node name="ModeButton" type="Button" parent="."]
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
-offset_left = 56.0
-offset_top = -210.0
-offset_right = 136.0
-offset_bottom = -184.0
+offset_left = 28.0
+offset_top = -150.0
+offset_right = 108.0
+offset_bottom = -132.0
 text = "移動"
-theme_override_font_sizes/font_size = 12
+theme_override_font_sizes/font_size = 10
 
 [node name="Skills" type="Control" parent="."]
 anchors_preset = 3
