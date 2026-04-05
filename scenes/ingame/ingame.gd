@@ -20,6 +20,7 @@ const ItemSysScript = preload("res://scripts/systems/item_system.gd")
 const InventoryScene = preload("res://scenes/ui/inventory_screen.tscn")
 const SkillSwapScene = preload("res://scenes/ui/skill_swap_dialog.tscn")
 const GameOverScene = preload("res://scenes/ui/game_over_effect.tscn")
+const ScreenEffectScene = preload("res://scenes/ui/screen_effect.tscn")
 
 var session: Node
 var _facing: Vector2i = Vector2i.DOWN
@@ -31,6 +32,7 @@ var _item_sys: Node = null
 var _inventory: Node = null
 var _skill_swap: Node = null
 var _game_over_effect: Node = null
+var _screen_fx: Node = null
 var _renderer: Renderer
 var _audio: Node
 var _platform: int = PlatformUI.Platform.PC
@@ -53,6 +55,8 @@ func _ready() -> void:
 	session.enemy_defeated_visual.connect(_on_enemy_defeated_visual)
 	session.enemy_ghostified_visual.connect(_on_enemy_ghostified_visual)
 	session.player_damaged_visual.connect(_on_player_damaged_visual)
+	session.player_leveled_up_visual.connect(_on_level_up)
+	session.combo_visual.connect(_on_combo)
 
 	_vpad = VirtualPadScene.instantiate()
 	add_child(_vpad)
@@ -85,6 +89,9 @@ func _ready() -> void:
 	_game_over_effect = GameOverScene.instantiate()
 	add_child(_game_over_effect)
 	_game_over_effect.finished.connect(_on_game_over_finished)
+
+	_screen_fx = ScreenEffectScene.instantiate()
+	add_child(_screen_fx)
 
 	# セーブデータのロード or 新規ゲーム
 	var gm: Node = get_node_or_null("/root/GameManager")
@@ -246,9 +253,12 @@ func _do_interact() -> void:
 	var result: Dictionary = session.interact(_facing)
 	match result["type"]:
 		"stairs":
+			_screen_fx.fade_transition(0.6)
+			await _screen_fx.fade_completed
 			_renderer.rebuild_map(session.grid)
 			_renderer.update_entities_immediate(session.player.grid_pos, session.enemies, $Camera2D)
 			_update_hud()
+			_update_minimap()
 		"chest_knowledge":
 			_audio.play("chest")
 			_renderer.rebuild_map(session.grid)
@@ -390,6 +400,15 @@ func _on_enemy_ghostified_visual() -> void:
 func _on_player_damaged_visual(_amount: int) -> void:
 	_audio.play("damage")
 	_renderer.animate_player_damage(self)
+
+
+func _on_level_up(new_level: int) -> void:
+	_audio.play("levelup")
+	_screen_fx.level_up_effect(new_level)
+
+
+func _on_combo(combo_count: int) -> void:
+	_screen_fx.combo_popup(combo_count)
 
 
 func _on_game_over() -> void:

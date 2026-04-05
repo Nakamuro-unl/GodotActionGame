@@ -16,6 +16,16 @@ func _ready() -> void:
 	_has_save = sm.has_save_data()
 	sm.free()
 	_update_menu_display()
+	_play_title_animation()
+
+
+func _play_title_animation() -> void:
+	var label: Label = get_node_or_null("MenuLabel")
+	if label == null:
+		return
+	label.modulate = Color(1, 1, 1, 0)
+	var tween: Tween = create_tween()
+	tween.tween_property(label, "modulate:a", 1.0, 0.8).set_ease(Tween.EASE_OUT)
 
 
 func _unhandled_input(event: InputEvent) -> void:
