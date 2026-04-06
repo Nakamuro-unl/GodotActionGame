@@ -345,10 +345,42 @@ func animate_defeat(enemy: Node, owner_node: Node) -> void:
 	if not enemy_sprites.has(enemy):
 		return
 	var spr: Sprite2D = enemy_sprites[enemy]
+	var pos: Vector2 = spr.position
+
+	# パーティクル風の破片を散らす
+	_spawn_defeat_particles(pos, owner_node)
+
+	# 白フラッシュ → 縮小+回転 → 消滅
 	var tween: Tween = owner_node.create_tween()
+	tween.tween_property(spr, "modulate", Color(3, 3, 3, 1), 0.06)
 	tween.set_parallel(true)
-	tween.tween_property(spr, "scale", Vector2.ZERO, 0.25).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_BACK)
-	tween.tween_property(spr, "modulate:a", 0.0, 0.25)
+	tween.tween_property(spr, "modulate", Color(1, 1, 1, 0), 0.3).set_delay(0.06)
+	tween.tween_property(spr, "scale", Vector2.ZERO, 0.3).set_delay(0.06).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_BACK)
+	tween.tween_property(spr, "rotation", PI * 2, 0.3).set_delay(0.06).set_ease(Tween.EASE_IN)
+
+
+func _spawn_defeat_particles(pos: Vector2, owner_node: Node) -> void:
+	for i in 6:
+		var particle: Sprite2D = Sprite2D.new()
+		var img: Image = Image.create(2, 2, false, Image.FORMAT_RGBA8)
+		var colors: Array[Color] = [Color(1, 0.9, 0.3), Color(1, 0.5, 0.2), Color(1, 1, 1)]
+		img.fill(colors[i % colors.size()])
+		particle.texture = ImageTexture.create_from_image(img)
+		particle.scale = Vector2(2, 2)
+		particle.position = pos
+		particle.z_index = 20
+		_entity_layer.add_child(particle)
+
+		var angle: float = i * PI / 3.0
+		var dist: float = TILE_SIZE * 1.5
+		var target: Vector2 = pos + Vector2(cos(angle) * dist, sin(angle) * dist)
+		var tween: Tween = owner_node.create_tween()
+		tween.set_parallel(true)
+		tween.tween_property(particle, "position", target, 0.35).set_ease(Tween.EASE_OUT)
+		tween.tween_property(particle, "modulate:a", 0.0, 0.35).set_ease(Tween.EASE_IN)
+		tween.tween_property(particle, "scale", Vector2.ZERO, 0.35)
+		tween.set_parallel(false)
+		tween.tween_callback(particle.queue_free)
 
 
 ## プレイヤー被ダメフラッシュ
