@@ -53,6 +53,29 @@ func level_up_effect(new_level: int) -> void:
 	)
 
 
+## ボス登場演出（赤フラッシュ+テキスト）
+func boss_appear_effect(boss_name: String) -> void:
+	visible = true
+	_is_playing = true
+	$ColorRect.color = Color(0, 0, 0, 0)
+	$Label.text = ""
+
+	var tween: Tween = create_tween()
+	tween.tween_property($ColorRect, "color", Color(0.5, 0, 0, 0.5), 0.1)
+	tween.tween_property($ColorRect, "color", Color(0.3, 0, 0, 0.3), 0.1)
+	tween.tween_callback(func() -> void:
+		$Label.text = "-- %s --" % boss_name
+		$Label.add_theme_color_override("font_color", Color(1, 0.3, 0.2)))
+	tween.tween_interval(1.5)
+	tween.tween_property($ColorRect, "color", Color(0, 0, 0, 0), 0.3)
+	tween.tween_callback(func() -> void:
+		$Label.text = ""
+		$Label.remove_theme_color_override("font_color")
+		_is_playing = false
+		visible = false
+	)
+
+
 ## コンボ表示（画面中央にポップアップ）
 func combo_popup(combo_count: int) -> void:
 	visible = true

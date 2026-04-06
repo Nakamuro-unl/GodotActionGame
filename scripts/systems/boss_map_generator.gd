@@ -98,7 +98,7 @@ func _generate_linear(grid: Array) -> void:
 # --- パターンB: 二股 ---
 
 func _generate_fork(grid: Array) -> void:
-	var start_room: Rect2i = Rect2i(4, 20, 6, 6)
+	var start_room: Rect2i = Rect2i(4, 19, 6, 6)
 	var fork_room: Rect2i = Rect2i(16, 19, 4, 4)
 	var chest_room: Rect2i = Rect2i(16, 10, 5, 5)
 	var boss_room: Rect2i = Rect2i(28, 16, 10, 10)
@@ -107,8 +107,8 @@ func _generate_fork(grid: Array) -> void:
 	_carve_room(grid, fork_room)
 	_carve_room(grid, chest_room)
 	_carve_room(grid, boss_room)
-	_carve_corridor_h(grid, 10, 16, 23)
-	_carve_corridor_v(grid, 15, 21, 18)  # 分岐→宝箱
+	_carve_corridor_h(grid, 10, 16, 21)  # 開始→分岐 (y=21は両部屋の範囲内)
+	_carve_corridor_v(grid, 10, 19, 18)  # 分岐→宝箱 (x=18は分岐と宝箱のx範囲内)
 	_carve_corridor_h(grid, 20, 27, 21)  # 分岐→ボス手前まで
 
 	_rooms = [start_room, fork_room, chest_room, boss_room]

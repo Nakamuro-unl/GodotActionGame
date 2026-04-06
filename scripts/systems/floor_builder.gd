@@ -126,9 +126,10 @@ func place_chests(session: Node, stage: int, is_first_floor: bool = false) -> vo
 	var count: int = _rng.randi_range(count_range.x, count_range.y)
 	var rooms: Array = session.map_generator.get_rooms()
 
+	var stairs_pos: Vector2i = session.map_generator.get_stairs_position()
 	for i in count:
 		var pos: Vector2i = _get_random_floor_pos(rooms, session)
-		if pos != Vector2i(1, 1):
+		if pos != Vector2i(1, 1) and pos != stairs_pos:
 			session.chest_positions.append(pos)
 			session.grid[pos.y][pos.x] = MapGen.Tile.CHEST
 

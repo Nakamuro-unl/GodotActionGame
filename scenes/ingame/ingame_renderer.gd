@@ -262,6 +262,36 @@ func _get_boss_texture(enemy: Node) -> Texture2D:
 	return tex_enemy_normal
 
 
+var _gimmick_labels: Array[Label] = []
+
+
+## ギミック壁にマーカー表示（?=解除不可、!=解除可能）
+func update_gimmick_markers(gimmick_system: Node, knowledge_system: Node) -> void:
+	for lbl in _gimmick_labels:
+		if is_instance_valid(lbl):
+			lbl.queue_free()
+	_gimmick_labels.clear()
+
+	for pos in gimmick_system._gimmicks:
+		var gimmick: Dictionary = gimmick_system._gimmicks[pos]
+		var required: String = gimmick["required_knowledge"]
+		var has_knowledge: bool = knowledge_system.is_acquired(required)
+
+		var lbl: Label = Label.new()
+		lbl.text = "!" if has_knowledge else "?"
+		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		lbl.add_theme_font_size_override("font_size", 12)
+		lbl.z_index = 25
+		lbl.size = Vector2(TILE_SIZE, TILE_SIZE)
+		if has_knowledge:
+			lbl.add_theme_color_override("font_color", Color(1.0, 0.9, 0.2))
+		else:
+			lbl.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
+		lbl.position = Vector2(pos.x * TILE_SIZE, pos.y * TILE_SIZE - 4)
+		_entity_layer.add_child(lbl)
+		_gimmick_labels.append(lbl)
+
+
 ## 範囲攻撃プレビュー: 対象セルをハイライト表示
 func show_range_preview(cells: Array, enemies: Array) -> void:
 	hide_range_preview()

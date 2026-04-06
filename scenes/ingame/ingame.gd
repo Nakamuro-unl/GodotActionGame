@@ -208,6 +208,9 @@ func _unhandled_input(event: InputEvent) -> void:
 						_do_move(Vector2i.RIGHT if diff.x > 0 else Vector2i.LEFT)
 					else:
 						_do_move(Vector2i.DOWN if diff.y > 0 else Vector2i.UP)
+				else:
+					# タップ（短い距離）: 足元の宝箱を開ける or 調べる
+					_do_interact()
 			_is_touching = false
 		return
 
@@ -424,11 +427,9 @@ func _show_item_popup(item_id: String) -> void:
 
 func _on_boss_appeared(boss_name: String) -> void:
 	_audio.play("boss_appear")
-	_screen_fx.level_up_effect(0)  # 流用: フラッシュ演出
-	# テキスト上書き
-	await get_tree().create_timer(0.2).timeout
+	_screen_fx.boss_appear_effect(boss_name)
 	_add_message("-- %s が現れた! --" % boss_name)
-	_add_message("階段はボスを倒すまで現れない!")
+	_add_message("宝箱で封印の知識を探そう!")
 
 
 func _on_boss_defeated_stairs(stairs_pos: Vector2i) -> void:
@@ -474,9 +475,13 @@ func _open_item_menu() -> void:
 
 func _on_item_selected(index: int) -> void:
 	var item_id: String = session.player.items[index] if index < session.player.items.size() else ""
+	var level_before: int = session.player.level
 	var result: Dictionary = Actions.use_item(_item_sys, session, index, _facing)
 	if result["success"]:
 		_add_message(result["message"])
+		# レベルアップ検知
+		if session.player.level > level_before:
+			_on_level_up(session.player.level)
 		# 移動系アイテムは即座にマップ再描画
 		if item_id in ["return_wing", "warp_stone"]:
 			_renderer.update_entities_immediate(session.player.grid_pos, session.enemies, $Camera2D)
@@ -497,6 +502,7 @@ func _update_hud() -> void:
 	HudHelper.update_gauges($UILayer, p)
 	HudHelper.update_skill_slots($UILayer/SkillSlots, p, session)
 	HudHelper.update_vpad(_vpad, p, session)
+	_renderer.update_gimmick_markers(session.gimmick_system, session.knowledge_system)
 
 
 # --- メッセージログ ---
