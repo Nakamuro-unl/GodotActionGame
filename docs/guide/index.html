@@ -612,49 +612,130 @@ footer {
 <!-- ===== 範囲攻撃 ===== -->
 <section id="range">
 <h2>範囲攻撃（関数グラフ技）<span class="tag tag-stage">Coming Soon</span></h2>
-<p>関数のグラフをフィールド上に描画し、軌道上の全敵にヒットする範囲攻撃。</p>
+<p>数学の関数をフィールド上にグラフとして描画し、軌道上の全敵に同時ヒットする範囲攻撃。<br>
+技キーを押すと<strong>攻撃範囲のプレビュー</strong>が表示され、向きを調整してから発動できる。隣接不要。</p>
 
-<div class="card-grid">
-  <div class="card">
-    <img src="../../assets/sprites/math_equation.png" alt="一次関数">
-    <div class="card-body">
-      <div class="card-title">リニアストライク (y=ax+b)</div>
-      <div class="card-sub">射程8マス直線 / -5 / MP:4 / Stage3</div>
-      <div class="card-desc">向き方向に直線を伸ばし、貫通して全敵にヒット。</div>
-    </div>
+<h3>1. リニアストライク (y = ax + b)</h3>
+<div class="card">
+  <img src="../../assets/sprites/math_equation.png" alt="一次関数" style="width:48px;height:48px">
+  <div class="card-body">
+    <div class="card-title">リニアストライク <span class="tag tag-formula">公式</span></div>
+    <div class="card-sub">射程8マス直線 / 各敵に-5 / MP:4 / 知識: 一次方程式 (K-306) / Stage3</div>
+    <div class="card-desc">向き方向にまっすぐ貫通する。通路での戦闘に最適。壁で遮断される。</div>
   </div>
-  <div class="card">
-    <img src="../../assets/sprites/math_square.png" alt="二次関数">
-    <div class="card-body">
-      <div class="card-title">パラボラショット (y=x^2)</div>
-      <div class="card-sub">前方6マス放物線 / -3 / MP:6 / Stage3</div>
-      <div class="card-desc">前方に放物線を描き、曲線上の全敵にヒット。</div>
-    </div>
+</div>
+<pre style="background:#111;padding:12px;border-radius:6px;color:#8cf;font-size:12px;margin:8px 0;line-height:1.4">
+ 向き: 右 →
+
+  . . . . . . . . . .
+  . . . . . . . . . .
+  . @ <span style="color:#4af">*</span> <span style="color:#4af">*</span> <span style="color:#f66">E</span> <span style="color:#4af">*</span> <span style="color:#4af">*</span> <span style="color:#f66">E</span> <span style="color:#4af">*</span> .   @ = プレイヤー
+  . . . . . . . . . .   <span style="color:#4af">*</span> = 攻撃範囲
+  . . . . . . . . . .   <span style="color:#f66">E</span> = 敵（ヒット）
+</pre>
+<div class="tip-box"><strong>使いどころ:</strong> 通路に敵が縦一列に並んでいる時に最大効果。1回のMP4で複数敵に-5。通路の入口で迎撃するのが定石。</div>
+
+<h3>2. パラボラショット (y = x^2)</h3>
+<div class="card">
+  <img src="../../assets/sprites/math_square.png" alt="二次関数" style="width:48px;height:48px">
+  <div class="card-body">
+    <div class="card-title">パラボラショット <span class="tag tag-formula">公式</span></div>
+    <div class="card-sub">前方6マス放物線 / 各敵に-3 / MP:6 / 知識: 二次関数 (K-311) / Stage3</div>
+    <div class="card-desc">前方に放物線を描く。直線では届かない斜め位置の敵をカバー。</div>
   </div>
-  <div class="card">
-    <img src="../../assets/sprites/math_topology.png" alt="sin">
-    <div class="card-body">
-      <div class="card-title">ウェーブアタック (y=sin(x))</div>
-      <div class="card-sub">前方8マス波形 / -4 / MP:7 / Stage4</div>
-      <div class="card-desc">左右に波打つ軌道で広範囲をカバー。</div>
-    </div>
+</div>
+<pre style="background:#111;padding:12px;border-radius:6px;color:#8cf;font-size:12px;margin:8px 0;line-height:1.4">
+ 向き: 上 ↑
+                <span style="color:#4af">*</span>
+              <span style="color:#4af">*</span> . <span style="color:#4af">*</span>
+            <span style="color:#f66">E</span> . . . <span style="color:#4af">*</span>     放物線の弧が
+          <span style="color:#4af">*</span> . . . . . <span style="color:#f66">E</span>   左右に広がる
+        <span style="color:#4af">*</span> . . . . . . .
+        . . . . @ . . .     @ から上向きに発射
+</pre>
+<div class="tip-box"><strong>使いどころ:</strong> 部屋の中で散らばった敵を弧で捉える。直線では当たらない左右の敵にリーチ。リニアストライクとの使い分けが重要。</div>
+
+<h3>3. ウェーブアタック (y = sin(x))</h3>
+<div class="card">
+  <img src="../../assets/sprites/math_topology.png" alt="sin" style="width:48px;height:48px">
+  <div class="card-body">
+    <div class="card-title">ウェーブアタック <span class="tag tag-formula">公式</span></div>
+    <div class="card-sub">前方8マス波形 / 各敵に-4 / MP:7 / 知識: 三角関数 (K-312) / Stage4</div>
+    <div class="card-desc">左右に波打ちながら前方に進む。広い範囲を蛇行してカバー。</div>
   </div>
-  <div class="card">
-    <img src="../../assets/sprites/math_topology.png" alt="円">
-    <div class="card-body">
-      <div class="card-title">サークルバースト (x^2+y^2=r^2)</div>
-      <div class="card-sub">半径2マス円形 / -3 / MP:8 / Stage4</div>
-      <div class="card-desc">プレイヤー中心に円を描き、周囲全敵にヒット。</div>
-    </div>
+</div>
+<pre style="background:#111;padding:12px;border-radius:6px;color:#8cf;font-size:12px;margin:8px 0;line-height:1.4">
+ 向き: 右 →
+
+  . . . <span style="color:#4af">*</span> . . . <span style="color:#4af">*</span> . .
+  . . <span style="color:#4af">*</span> . <span style="color:#f66">E</span> . <span style="color:#4af">*</span> . <span style="color:#4af">*</span> .   sin波が蛇行して
+  . @ . . . <span style="color:#4af">*</span> . . . .   広い範囲をカバー
+  . . <span style="color:#4af">*</span> . <span style="color:#4af">*</span> . <span style="color:#f66">E</span> . <span style="color:#4af">*</span> .
+  . . . <span style="color:#4af">*</span> . . . <span style="color:#4af">*</span> . .
+</pre>
+<div class="tip-box"><strong>使いどころ:</strong> 大部屋で敵が散っている時に。直線では1体しか当たらない場面でも、波形なら2-3体捉えられる。MP7と重いので使いどころを選ぶ。</div>
+
+<h3>4. サークルバースト (x^2 + y^2 = r^2)</h3>
+<div class="card">
+  <img src="../../assets/sprites/math_topology.png" alt="円" style="width:48px;height:48px">
+  <div class="card-body">
+    <div class="card-title">サークルバースト <span class="tag tag-formula">公式</span></div>
+    <div class="card-sub">半径2マス円形 / 各敵に-3 / MP:8 / 知識: 円の方程式 (K-313) / Stage4</div>
+    <div class="card-desc">プレイヤー中心に全方位攻撃。囲まれた時の緊急脱出に。向き不問。</div>
   </div>
-  <div class="card">
-    <img src="../../assets/sprites/math_log.png" alt="指数">
-    <div class="card-body">
-      <div class="card-title">エクスポネンシャル (y=2^x)</div>
-      <div class="card-sub">前方5マス / 距離増加 / MP:10 / Stage5</div>
-      <div class="card-desc">距離に応じてダメージ増加(1,2,4,8...)。遠い敵ほど痛い。</div>
-    </div>
+</div>
+<pre style="background:#111;padding:12px;border-radius:6px;color:#8cf;font-size:12px;margin:8px 0;line-height:1.4">
+        <span style="color:#4af">*</span> <span style="color:#4af">*</span> <span style="color:#4af">*</span>
+      <span style="color:#4af">*</span> . . . <span style="color:#f66">E</span>
+      <span style="color:#f66">E</span> . @ . <span style="color:#4af">*</span>     @ 中心に円形
+      <span style="color:#4af">*</span> . . . <span style="color:#4af">*</span>     全方位同時ヒット
+        <span style="color:#f66">E</span> <span style="color:#4af">*</span> <span style="color:#4af">*</span>       向き不問!
+</pre>
+<div class="tip-box"><strong>使いどころ:</strong> 複数の敵に囲まれた時の切り札。向きに関係なく全方位に効く唯一の技。MP8と重いが、3体以上同時ヒットなら元が取れる。</div>
+
+<h3>5. エクスポネンシャル (y = 2^x)</h3>
+<div class="card">
+  <img src="../../assets/sprites/math_log.png" alt="指数" style="width:48px;height:48px">
+  <div class="card-body">
+    <div class="card-title">エクスポネンシャル <span class="tag tag-formula">公式</span></div>
+    <div class="card-sub">前方5マス / 距離増加(-1,-2,-4,-8,-16) / MP:10 / 知識: 指数関数 (K-314) / Stage5</div>
+    <div class="card-desc">遠い敵ほどダメージが指数的に増大。遠距離の強敵を一撃で削る。</div>
   </div>
+</div>
+<pre style="background:#111;padding:12px;border-radius:6px;color:#8cf;font-size:12px;margin:8px 0;line-height:1.4">
+ 向き: 右 →
+                                   ダメージ
+  . . . . . . . .          距離1: <span style="color:#aaf">-1</span>
+  . @ <span style="color:#aaf">*</span> <span style="color:#8cf">*</span> <span style="color:#6af">*</span> <span style="color:#4cf">*</span> <span style="color:#f66">*</span> .   距離2: <span style="color:#8cf">-2</span>
+  . . . . . . . .          距離3: <span style="color:#6af">-4</span>
+                            距離4: <span style="color:#4cf">-8</span>
+  色が濃い = ダメージ大     距離5: <span style="color:#f66">-16</span>
+</pre>
+<div class="tip-box"><strong>使いどころ:</strong> 遠くの高数値の敵（ブラックホール等の静止型）に絶大な効果。距離5で-16は破格。ただしMP10と最重量級。近くの敵には-1しか入らないので注意。</div>
+
+<h3>範囲攻撃の操作</h3>
+<table>
+<tr><th>手順</th><th>PC</th><th>モバイル</th></tr>
+<tr><td>1. 技を選択</td><td>1-6キー</td><td>技ボタンタップ</td></tr>
+<tr><td>2. プレビュー表示</td><td colspan="2">攻撃範囲がハイライト（<span style="color:#4af">青</span>=空, <span style="color:#f66">赤</span>=敵）</td></tr>
+<tr><td>3. 向き調整</td><td>矢印キー</td><td>十字キータップ</td></tr>
+<tr><td>4. 発動</td><td>Enter/Space</td><td>決定ボタン</td></tr>
+<tr><td>4'. キャンセル</td><td>Esc</td><td>戻るボタン</td></tr>
+</table>
+
+<h3>コンボ戦略</h3>
+<div class="tip-box">
+  <strong>範囲 + 単体のコンボ例:</strong>
+  <ul style="margin-top:8px">
+    <li><strong>削り→仕留め:</strong> リニアストライク(-5)で通路の敵3体を一度に削り、個別に-1で0に調整してコンボ撃破</li>
+    <li><strong>円 + モジュロ:</strong> サークルバースト(-3)で周囲を削り、%4で4の倍数の敵を即0化</li>
+    <li><strong>指数 + 対数:</strong> エクスポネンシャルで遠方の敵を大幅に削り、log2で一桁に → -1で仕留め</li>
+    <li><strong>波形で掃討:</strong> ウェーブアタックで大部屋を薙ぎ払い、残った敵を通常技で仕留める</li>
+  </ul>
+</div>
+
+<div class="warn-box">
+  <strong>注意:</strong> 範囲攻撃で複数敵を同時に負の数にすると大量の幽霊が発生してコンボリセット。削りは慎重に、仕留めは個別で。
 </div>
 </section>
 
