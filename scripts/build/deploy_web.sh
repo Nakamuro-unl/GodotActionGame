@@ -47,6 +47,16 @@ find . -maxdepth 1 -not -name '.git' -not -name '.' -not -name '..' -exec rm -rf
 # ビルド成果物をコピー
 cp -r "$BUILD_DIR"/* .
 
+# 攻略ガイドをコピー
+log "Copying guide..."
+mkdir -p guide
+cp -r "$PROJECT_DIR/docs/guide/"* guide/
+# ガイド内の画像パスを修正（../../assets/sprites/ → sprites/）
+mkdir -p guide/sprites
+cp "$PROJECT_DIR"/assets/sprites/*.png guide/sprites/
+sed -i.bak 's|../../assets/sprites/|sprites/|g' guide/index.html
+rm -f guide/index.html.bak
+
 # 4. コミット+プッシュ
 cd "$WEB_REPO"
 git add -A

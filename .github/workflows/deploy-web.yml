@@ -40,6 +40,13 @@ jobs:
           ls -lh builds/web/
           test -f builds/web/index.html || exit 1
 
+      - name: Copy guide
+        run: |
+          mkdir -p builds/web/guide/sprites
+          cp docs/guide/* builds/web/guide/ 2>/dev/null || true
+          cp assets/sprites/*.png builds/web/guide/sprites/
+          sed -i 's|../../assets/sprites/|sprites/|g' builds/web/guide/index.html
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:

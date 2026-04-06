@@ -100,5 +100,7 @@ func _build_pages() -> void:
 		"  幽霊化: 回数 x30\n\n" +
 		"ゲームオーバーでもスコアは残る!\n" +
 		"ランキングTOP10に挑戦しよう!\n\n" +
+		"[攻略ガイド]\n" +
+		"nakamuro-unl.github.io/mathmage-web/guide/\n\n" +
 		"(Esc: タイトルへ)"
 	)
