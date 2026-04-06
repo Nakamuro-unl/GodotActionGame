@@ -89,9 +89,5 @@ static func update_vpad(vpad: Node, player: Node, session: Node) -> void:
 	vpad.update_skill_labels(names, icons)
 
 
-static func _find_skill_icon(skill_id: String, session: Node) -> String:
-	for kid in Data.KNOWLEDGE_ICON_MAP:
-		var info: Dictionary = session.knowledge_system.get_info(kid)
-		if not info.is_empty() and info.get("skill_id", "") == skill_id:
-			return Data.KNOWLEDGE_ICON_MAP[kid]
-	return ""
+static func _find_skill_icon(skill_id: String, _session: Node) -> String:
+	return Data.SKILL_ICON_MAP.get(skill_id, "")

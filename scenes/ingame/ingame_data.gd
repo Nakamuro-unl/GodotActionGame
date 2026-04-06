@@ -11,6 +11,10 @@ const KNOWLEDGE_ICON_MAP: Dictionary = {
 	"K-104": "math_zero",         # 零の発見
 	"K-105": "math_negative",     # 負の数
 	"K-106": "math_number_line",  # 数直線
+	"K-107": "math_addition",     # 繰り上がり(+3)
+	"K-108": "math_subtraction",  # 繰り下がり(-5)
+	"K-109": "math_addition",     # 十進法(+10)
+	"K-110": "math_subtraction",  # 補数(-10)
 	# ステージ2: 古代文明
 	"K-201": "math_multiply",     # 乗法
 	"K-202": "math_division",     # 除法
@@ -39,6 +43,7 @@ const KNOWLEDGE_ICON_MAP: Dictionary = {
 	"K-504": "math_zero_vector",  # ゼロベクトル
 	"K-505": "math_topology",     # 位相変換
 	"K-506": "math_infinity",     # 無限の定義
+	"K-407": "math_zero_vector",  # 零化写像(x0)
 	# 範囲攻撃
 	"K-311": "skill_quadratic",   # 二次関数
 	"K-312": "skill_sine",        # 三角関数
@@ -110,7 +115,46 @@ const ITEM_DESCS: Dictionary = {
 }
 
 
+## スキルIDから直接アイコンを引くマップ
+const SKILL_ICON_MAP: Dictionary = {
+	"plus_1": "math_addition",
+	"minus_1": "math_subtraction",
+	"plus_3": "math_addition",
+	"minus_5": "math_subtraction",
+	"plus_10": "math_addition",
+	"minus_10": "math_subtraction",
+	"double": "math_multiply",
+	"half": "math_division",
+	"triple": "math_multiply",
+	"third": "math_division",
+	"mod4": "math_modulo",
+	"abs": "math_absolute",
+	"negate": "math_negate",
+	"square": "math_square",
+	"sqrt": "math_sqrt",
+	"derivative": "math_derivative",
+	"integral": "math_integral",
+	"probability": "math_probability",
+	"log2": "math_log",
+	"zero_vector": "math_zero_vector",
+	"topology": "math_topology",
+	"identity": "math_identity",
+	"limit": "math_limit",
+	"zero_mul": "math_zero_vector",
+	"linear_strike": "skill_linear",
+	"parabola_shot": "skill_quadratic",
+	"wave_attack": "skill_sine",
+	"circle_burst": "skill_circle",
+	"exponential_atk": "skill_exponential",
+}
+
+
 static func get_icon_path(sprite_name: String) -> String:
 	if sprite_name == "":
 		return ""
 	return "res://assets/sprites/%s.png" % sprite_name
+
+
+static func get_skill_icon_path(skill_id: String) -> String:
+	var icon_name: String = SKILL_ICON_MAP.get(skill_id, "")
+	return get_icon_path(icon_name)
