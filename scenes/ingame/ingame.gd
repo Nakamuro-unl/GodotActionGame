@@ -31,6 +31,8 @@ var _item_menu: Node = null
 var _item_sys: Node = null
 var _inventory: Node = null
 var _skill_swap: Node = null
+var _range_preview_mode: bool = false
+var _range_skill_slot: int = -1
 var _game_over_effect: Node = null
 var _screen_fx: Node = null
 var _renderer: Renderer
@@ -186,6 +188,11 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _skill_swap and _skill_swap.is_showing():
 		return
 
+	# 範囲攻撃プレビューモード
+	if _range_preview_mode:
+		_handle_range_preview(event)
+		return
+
 	# タッチスワイプで移動
 	if event is InputEventScreenTouch:
 		if event.pressed:
@@ -256,9 +263,16 @@ func _do_skill(slot_index: int) -> void:
 	if skill_id == null or skill_id == "":
 		_add_message("技がセットされていない")
 		return
+
+	# 範囲技ならプレビューモードに入る
+	var info: Dictionary = session.combat_system.get_skill_info(skill_id)
+	var skill_data: Dictionary = session.combat_system.SKILLS.get(skill_id, {})
+	if skill_data.get("type", "") == "range":
+		_enter_range_preview(slot_index, skill_id)
+		return
+
 	var result: Dictionary = session.try_use_skill(slot_index, _facing)
 	if result["success"]:
-		var info: Dictionary = session.combat_system.get_skill_info(skill_id)
 		_add_message("%s を使った! %d -> %d" % [info["name"], result["old_value"], result["new_value"]])
 		_renderer.animate_attack(_facing, self)
 		_audio.play("hit")
@@ -325,6 +339,73 @@ func _after_turn_animated() -> void:
 		_renderer.update_enemy_visuals(session.enemies)
 		_update_minimap()
 	)
+
+
+# --- 範囲攻撃プレビュー ---
+
+func _enter_range_preview(slot_index: int, skill_id: String) -> void:
+	_range_preview_mode = true
+	_range_skill_slot = slot_index
+	var cells: Array = session.combat_system.get_range_preview(skill_id, session.player.grid_pos, _facing)
+	_renderer.show_range_preview(cells, session.enemies)
+	var info: Dictionary = session.combat_system.get_skill_info(skill_id)
+	_add_message("%s: 向き調整→決定で発動 / Escでキャンセル" % info["name"])
+
+
+func _handle_range_preview(event: InputEvent) -> void:
+	# 向き変更でプレビュー更新
+	var new_facing: Vector2i = Vector2i.ZERO
+	if event.is_action_pressed("ui_up"): new_facing = Vector2i.UP
+	elif event.is_action_pressed("ui_down"): new_facing = Vector2i.DOWN
+	elif event.is_action_pressed("ui_left"): new_facing = Vector2i.LEFT
+	elif event.is_action_pressed("ui_right"): new_facing = Vector2i.RIGHT
+	elif event.is_action_pressed("ui_accept"):
+		_fire_range_skill()
+		return
+	elif event.is_action_pressed("ui_cancel"):
+		_cancel_range_preview()
+		return
+	else:
+		return
+
+	if new_facing != Vector2i.ZERO:
+		_facing = new_facing
+		_renderer.update_player_facing(_facing)
+		var skill_id: String = session.player.skill_slots[_range_skill_slot]
+		var cells: Array = session.combat_system.get_range_preview(skill_id, session.player.grid_pos, _facing)
+		_renderer.show_range_preview(cells, session.enemies)
+	get_viewport().set_input_as_handled()
+
+
+func _fire_range_skill() -> void:
+	_renderer.hide_range_preview()
+	_range_preview_mode = false
+	var skill_id: String = session.player.skill_slots[_range_skill_slot]
+	var result: Dictionary = session.combat_system.use_range_skill(skill_id, session.player, session.enemies, _facing)
+	if result["success"]:
+		var info: Dictionary = session.combat_system.get_skill_info(skill_id)
+		var hit_count: int = result["hit_enemies"].size()
+		_add_message("%s 発動! %d体にヒット!" % [info["name"], hit_count])
+		_renderer.animate_range_attack(result["cells"], self)
+		_audio.play("hit")
+		session.score_system.register_turn()
+		session.turn_manager.execute_player_action()
+		# 撃破チェック
+		for hit in result["hit_enemies"]:
+			var enemy: Node = hit["enemy"]
+			if enemy.state == 2:  # DEFEATED
+				session._on_enemy_defeated(enemy)
+		_after_turn_animated()
+	else:
+		_add_message("MP不足!")
+	_range_skill_slot = -1
+
+
+func _cancel_range_preview() -> void:
+	_renderer.hide_range_preview()
+	_range_preview_mode = false
+	_range_skill_slot = -1
+	_add_message("キャンセル")
 
 
 # --- ポップアップ ---

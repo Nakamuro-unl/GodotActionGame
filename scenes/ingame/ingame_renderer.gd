@@ -26,6 +26,8 @@ var tex_player_down: Texture2D
 var tex_player_up: Texture2D
 var tex_player_left: Texture2D
 var tex_player_right: Texture2D
+var _preview_sprites: Array[Sprite2D] = []
+
 var tex_enemy_normal: Texture2D
 var tex_enemy_ghost: Texture2D
 var tex_bosses: Dictionary = {}       # stage -> Texture2D
@@ -258,6 +260,61 @@ func _get_boss_texture(enemy: Node) -> Texture2D:
 			if tex_bosses.has(stage):
 				return tex_bosses[stage]
 	return tex_enemy_normal
+
+
+## 範囲攻撃プレビュー: 対象セルをハイライト表示
+func show_range_preview(cells: Array, enemies: Array) -> void:
+	hide_range_preview()
+	for cell in cells:
+		var spr: Sprite2D = Sprite2D.new()
+		# 敵がいるマスは赤、空マスは青
+		var has_enemy: bool = false
+		for enemy in enemies:
+			if enemy.grid_pos == cell and enemy.state != EnemyScript.EnemyState.DEFEATED:
+				has_enemy = true
+				break
+		var img: Image = Image.create(4, 4, false, Image.FORMAT_RGBA8)
+		if has_enemy:
+			img.fill(Color(1.0, 0.3, 0.3, 0.45))
+		else:
+			img.fill(Color(0.3, 0.5, 1.0, 0.3))
+		spr.texture = ImageTexture.create_from_image(img)
+		spr.scale = Vector2(TILE_SIZE / 4.0, TILE_SIZE / 4.0)
+		spr.position = grid_to_world(cell)
+		spr.z_index = 3
+		_entity_layer.add_child(spr)
+		_preview_sprites.append(spr)
+
+
+## プレビューを非表示
+func hide_range_preview() -> void:
+	for spr in _preview_sprites:
+		if is_instance_valid(spr):
+			spr.queue_free()
+	_preview_sprites.clear()
+
+
+## 範囲攻撃エフェクト: セルを順番にフラッシュ
+func animate_range_attack(cells: Array, owner_node: Node) -> Tween:
+	var tween: Tween = owner_node.create_tween()
+	for i in cells.size():
+		var cell: Vector2i = cells[i]
+		tween.tween_callback(func() -> void:
+			var spr: Sprite2D = Sprite2D.new()
+			var img: Image = Image.create(4, 4, false, Image.FORMAT_RGBA8)
+			img.fill(Color(1.0, 1.0, 0.5, 0.7))
+			spr.texture = ImageTexture.create_from_image(img)
+			spr.scale = Vector2(TILE_SIZE / 4.0, TILE_SIZE / 4.0)
+			spr.position = grid_to_world(cell)
+			spr.z_index = 15
+			_entity_layer.add_child(spr)
+			# 0.2秒後に自動削除
+			var t: Tween = owner_node.create_tween()
+			t.tween_property(spr, "modulate:a", 0.0, 0.2)
+			t.tween_callback(spr.queue_free)
+		)
+		tween.tween_interval(0.03)
+	return tween
 
 
 ## プレイヤーの攻撃アニメーション（向き方向に突進→戻る）
