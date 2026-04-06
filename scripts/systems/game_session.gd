@@ -50,6 +50,8 @@ var current_stage: int = 1
 var current_floor: int = 1
 var seed_value: int = 0
 var _is_boss_floor: bool = false
+var _boss_seal_chest_pos: Vector2i = Vector2i(-1, -1)
+var _boss_seal_knowledge_id: String = ""
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var _is_game_over: bool = false
 var _floor_builder: FloorBuilder
@@ -115,11 +117,15 @@ func _generate_floor() -> void:
 	minimap.init_floor(MapGen.GRID_WIDTH, MapGen.GRID_HEIGHT)
 	minimap.explore_around(player.grid_pos, 4)
 
-	# ボスフロア: 階段を隠す（ボス撃破で出現）
+	# ボスフロア: 階段を隠す + 封印宝箱配置
 	_is_boss_floor = is_boss_floor
+	_boss_seal_chest_pos = Vector2i(-1, -1)
+	_boss_seal_knowledge_id = ""
 	if is_boss_floor:
 		var sp: Vector2i = map_generator.get_stairs_position()
 		grid[sp.y][sp.x] = MapGen.Tile.FLOOR  # 階段を床に
+		# 封印宝箱を配置
+		_floor_builder.place_boss_floor_chest(self, current_stage)
 		# ボス登場演出シグナル
 		for enemy in enemies:
 			if enemy.ai_pattern == EnemyScript.AIPattern.BOSS:
@@ -211,6 +217,13 @@ func _open_chest_at(pos: Vector2i) -> Dictionary:
 	if pos == _start_chest_pos:
 		_start_chest_pos = Vector2i(-1, -1)
 		return _acquire_knowledge("K-103")
+
+	# ボス封印解除用の宝箱
+	if pos == _boss_seal_chest_pos and _boss_seal_knowledge_id != "":
+		_boss_seal_chest_pos = Vector2i(-1, -1)
+		var kid: String = _boss_seal_knowledge_id
+		_boss_seal_knowledge_id = ""
+		return _acquire_knowledge(kid)
 
 	var has_unobtained: bool = knowledge_system.get_random_unobtained(current_stage) != ""
 	var roll: String = drop_table.roll_chest_type(has_unobtained)
@@ -322,10 +335,13 @@ func _on_enemy_defeated(enemy: Node) -> void:
 	if player.level > level_before:
 		player_leveled_up_visual.emit(player.level)
 
-	# ボス撃破: 定理を確定ドロップ + 階段出現
+	# ボス撃破: 定理を確定ドロップ + MP回復 + 階段出現
 	if enemy.ai_pattern == EnemyScript.AIPattern.BOSS:
 		score_system.register_boss_kill(0)
 		_drop_boss_theorem()
+		# MP回復アイテム付与
+		player.add_item("wisdom_water")
+		message.emit("知恵の水を手に入れた!")
 		# 階段を出現させる
 		if _is_boss_floor:
 			var sp: Vector2i = map_generator.get_stairs_position()

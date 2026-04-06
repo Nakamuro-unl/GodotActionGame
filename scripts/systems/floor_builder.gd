@@ -48,12 +48,20 @@ func spawn_enemies(session: Node, stage: int, is_boss_floor: bool = false) -> vo
 		session.enemies.append(enemy)
 
 
+## ボス封印に必要な知識（ステージ別）
+const BOSS_SEAL_KNOWLEDGE: Dictionary = {
+	1: {"gimmick": GimmickSys.GimmickType.VOID_WALL, "knowledge": "K-104"},
+	2: {"gimmick": GimmickSys.GimmickType.CIPHER_DOOR, "knowledge": "K-206"},
+	3: {"gimmick": GimmickSys.GimmickType.LOCKED_DOOR, "knowledge": "K-306"},
+	4: {"gimmick": GimmickSys.GimmickType.INF_CORRIDOR, "knowledge": "K-406"},
+	5: {"gimmick": GimmickSys.GimmickType.FINAL_DOOR, "knowledge": "K-506"},
+}
+
+
 func _spawn_boss(session: Node, stage: int, rooms: Array) -> void:
 	var data: Dictionary = EnemyScript.BOSS_DATA[stage]
-	# ボスは階段がある部屋（最も遠い部屋）に配置
 	var stairs_pos: Vector2i = session.map_generator.get_stairs_position()
 	var boss_pos: Vector2i = Vector2i(stairs_pos.x + 1, stairs_pos.y)
-	# 有効な位置か確認、ダメなら近くの床タイルを探す
 	if boss_pos.x >= MapGen.GRID_WIDTH - 1 or session.grid[boss_pos.y][boss_pos.x] == MapGen.Tile.WALL:
 		boss_pos = _get_random_floor_pos(rooms, session)
 
@@ -63,6 +71,48 @@ func _spawn_boss(session: Node, stage: int, rooms: Array) -> void:
 	boss.defeated.connect(session._on_enemy_defeated.bind(boss))
 	boss.ghostified.connect(session._on_enemy_ghostified)
 	session.enemies.append(boss)
+
+	# ボス部屋の封印ギミックを配置
+	_place_boss_seal(session, stage, rooms, boss_pos)
+
+
+func _place_boss_seal(session: Node, stage: int, rooms: Array, boss_pos: Vector2i) -> void:
+	if not BOSS_SEAL_KNOWLEDGE.has(stage):
+		return
+	var seal: Dictionary = BOSS_SEAL_KNOWLEDGE[stage]
+	# ボスの部屋の入口付近に封印壁を配置
+	# ボス位置から最も近い壁タイルを探す
+	var directions: Array[Vector2i] = [Vector2i.UP, Vector2i.DOWN, Vector2i.LEFT, Vector2i.RIGHT]
+	for dir in directions:
+		for dist in range(1, 5):
+			var wall_pos: Vector2i = boss_pos + dir * dist
+			if wall_pos.x > 0 and wall_pos.x < MapGen.GRID_WIDTH - 1 and wall_pos.y > 0 and wall_pos.y < MapGen.GRID_HEIGHT - 1:
+				if session.grid[wall_pos.y][wall_pos.x] == MapGen.Tile.WALL:
+					session.gimmick_system.place_gimmick(wall_pos, seal["gimmick"], seal["knowledge"])
+					return
+
+
+func place_boss_floor_chest(session: Node, stage: int) -> void:
+	## ボスフロアに封印解除用の知識を含む宝箱を確定配置
+	if not BOSS_SEAL_KNOWLEDGE.has(stage):
+		return
+	var seal_knowledge_id: String = BOSS_SEAL_KNOWLEDGE[stage]["knowledge"]
+	# 既に持っていたら不要
+	if session.knowledge_system.is_acquired(seal_knowledge_id):
+		return
+	# プレイヤーの部屋に宝箱を配置
+	var rooms: Array = session.map_generator.get_rooms()
+	if rooms.is_empty():
+		return
+	var room: Rect2i = rooms[0]
+	var cx: int = room.position.x + room.size.x / 2 + 1
+	var cy: int = room.position.y + room.size.y / 2
+	var pos: Vector2i = Vector2i(cx, cy)
+	session.chest_positions.append(pos)
+	session.grid[pos.y][pos.x] = MapGen.Tile.CHEST
+	# この宝箱は封印解除知識を確定で出す
+	session._boss_seal_chest_pos = pos
+	session._boss_seal_knowledge_id = seal_knowledge_id
 
 
 func place_chests(session: Node, stage: int, is_first_floor: bool = false) -> void:
