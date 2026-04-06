@@ -27,6 +27,7 @@ const MinimapData = preload("res://scripts/systems/minimap_data.gd")
 const PlayerScript = preload("res://scripts/entities/player.gd")
 const EnemyScript = preload("res://scripts/entities/enemy.gd")
 const FloorBuilder = preload("res://scripts/systems/floor_builder.gd")
+const BossMapGen = preload("res://scripts/systems/boss_map_generator.gd")
 const DropTableScript = preload("res://scripts/systems/drop_table.gd")
 const SaveMgr = preload("res://scripts/systems/save_manager.gd")
 
@@ -106,33 +107,99 @@ func _init_player() -> void:
 
 func _generate_floor() -> void:
 	var floor_seed: int = seed_value + current_floor * 1000
-	grid = map_generator.generate_floor(current_stage, floor_seed)
-	player.setup_floor(map_generator.get_player_start())
-
-	_start_chest_pos = Vector2i(-1, -1)
 	var is_boss_floor: bool = current_floor % FLOORS_PER_STAGE == 0
-	_floor_builder.spawn_enemies(self, current_stage, is_boss_floor)
-	_floor_builder.place_chests(self, current_stage, current_floor == 1)
-	_floor_builder.place_gimmicks(self, current_stage)
-	minimap.init_floor(MapGen.GRID_WIDTH, MapGen.GRID_HEIGHT)
-	minimap.explore_around(player.grid_pos, 4)
-
-	# ボスフロア: 階段を隠す + 封印宝箱配置
 	_is_boss_floor = is_boss_floor
+	_start_chest_pos = Vector2i(-1, -1)
 	_boss_seal_chest_pos = Vector2i(-1, -1)
 	_boss_seal_knowledge_id = ""
-	if is_boss_floor:
-		var sp: Vector2i = map_generator.get_stairs_position()
-		grid[sp.y][sp.x] = MapGen.Tile.FLOOR  # 階段を床に
-		# 封印宝箱を配置
-		_floor_builder.place_boss_floor_chest(self, current_stage)
-		# ボス登場演出シグナル
-		for enemy in enemies:
-			if enemy.ai_pattern == EnemyScript.AIPattern.BOSS:
-				boss_appeared.emit(enemy.enemy_name)
-				break
 
+	if is_boss_floor:
+		_generate_boss_floor(floor_seed)
+	else:
+		_generate_normal_floor(floor_seed, is_boss_floor)
+
+	minimap.init_floor(MapGen.GRID_WIDTH, MapGen.GRID_HEIGHT)
+	minimap.explore_around(player.grid_pos, 4)
 	floor_changed.emit(current_floor, current_stage)
+
+
+func _generate_normal_floor(floor_seed: int, is_boss_floor: bool) -> void:
+	grid = map_generator.generate_floor(current_stage, floor_seed)
+	player.setup_floor(map_generator.get_player_start())
+	_floor_builder.spawn_enemies(self, current_stage, false)
+	_floor_builder.place_chests(self, current_stage, current_floor == 1)
+	_floor_builder.place_gimmicks(self, current_stage)
+
+
+func _generate_boss_floor(floor_seed: int) -> void:
+	var bmg: BossMapGen = BossMapGen.new()
+	bmg.setup(_rng)
+	grid = bmg.generate(floor_seed)
+	player.setup_floor(bmg.get_player_start())
+
+	# ボスを配置
+	var boss_data: Dictionary = EnemyScript.BOSS_DATA.get(current_stage, {})
+	if boss_data.is_empty():
+		return
+	for e in enemies:
+		if is_instance_valid(e):
+			e.queue_free()
+	enemies.clear()
+
+	var boss: Node = EnemyScript.new()
+	add_child(boss)
+	boss.setup(str(boss_data["name"]), int(boss_data["value"]), int(boss_data["attack"]),
+		int(boss_data["exp"]), EnemyScript.AIPattern.BOSS, bmg.get_boss_position())
+	boss.defeated.connect(_on_enemy_defeated.bind(boss))
+	boss.ghostified.connect(_on_enemy_ghostified)
+	enemies.append(boss)
+
+	# 通常敵を少数配置
+	var count: int = _rng.randi_range(1, 3)
+	var rooms: Array = bmg.get_rooms()
+	for i in count:
+		var template: Dictionary = drop_table.pick_enemy_template(current_stage)
+		var value: int = _rng.randi_range(int(template["value_min"]), int(template["value_max"]))
+		# 開始部屋か中間部屋に配置
+		var room: Rect2i = rooms[_rng.randi_range(0, mini(rooms.size() - 2, 1))]
+		var x: int = _rng.randi_range(room.position.x, room.position.x + room.size.x - 1)
+		var y: int = _rng.randi_range(room.position.y, room.position.y + room.size.y - 1)
+		var enemy: Node = EnemyScript.new()
+		add_child(enemy)
+		enemy.setup(str(template["name"]), value, int(template["attack"]),
+			int(template["exp"]), int(template["ai"]), Vector2i(x, y))
+		enemy.defeated.connect(_on_enemy_defeated.bind(enemy))
+		enemy.ghostified.connect(_on_enemy_ghostified)
+		enemies.append(enemy)
+
+	# 宝箱（封印解除知識）
+	chest_positions.clear()
+	var cp: Vector2i = bmg.get_chest_position()
+	chest_positions.append(cp)
+	grid[cp.y][cp.x] = MapGen.Tile.CHEST
+
+	# 封印ギミック
+	gimmick_system.clear_gimmicks()
+	var seal_pos: Vector2i = bmg.get_seal_position()
+	var seal_data: Dictionary = _floor_builder.BOSS_SEAL_KNOWLEDGE.get(current_stage, {})
+	if not seal_data.is_empty():
+		gimmick_system.place_gimmick(seal_pos, seal_data["gimmick"], seal_data["knowledge"])
+		if not knowledge_system.is_acquired(seal_data["knowledge"]):
+			_boss_seal_chest_pos = cp
+			_boss_seal_knowledge_id = seal_data["knowledge"]
+
+	# 階段を隠す
+	var sp: Vector2i = bmg.get_stairs_position()
+	grid[sp.y][sp.x] = MapGen.Tile.FLOOR
+
+	# map_generatorの位置情報をボスマップの値で上書き（interact等で参照するため）
+	# _stairs_posとget_player_startを参照するため一時保存
+	map_generator._stairs_pos = sp
+	map_generator._player_start = bmg.get_player_start()
+	map_generator._rooms = bmg.get_rooms()
+
+	# ボス登場演出
+	boss_appeared.emit(str(boss_data["name"]))
 
 
 # --- プレイヤーアクション ---
