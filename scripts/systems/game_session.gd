@@ -178,11 +178,12 @@ func _generate_boss_floor(floor_seed: int) -> void:
 	chest_positions.append(cp)
 	grid[cp.y][cp.x] = MapGen.Tile.CHEST
 
-	# 封印ギミック
+	# 封印ギミック（グリッド上もWALLにしてボスが出てこれないようにする）
 	gimmick_system.clear_gimmicks()
 	var seal_pos: Vector2i = bmg.get_seal_position()
 	var seal_data: Dictionary = _floor_builder.BOSS_SEAL_KNOWLEDGE.get(current_stage, {})
 	if not seal_data.is_empty():
+		grid[seal_pos.y][seal_pos.x] = MapGen.Tile.WALL  # 壁にする
 		gimmick_system.place_gimmick(seal_pos, seal_data["gimmick"], seal_data["knowledge"])
 		if not knowledge_system.is_acquired(seal_data["knowledge"]):
 			_boss_seal_chest_pos = cp

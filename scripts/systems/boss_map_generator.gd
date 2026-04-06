@@ -85,14 +85,14 @@ func _generate_linear(grid: Array) -> void:
 	_carve_room(grid, chest_room)
 	_carve_room(grid, boss_room)
 	_carve_corridor_h(grid, 10, 16, 21)
-	_carve_corridor_h(grid, 21, 30, 21)
+	_carve_corridor_h(grid, 21, 29, 21)  # 通路はボス部屋の手前まで
 
 	_rooms = [start_room, chest_room, boss_room]
 	_player_start = _room_center(start_room)
 	_chest_pos = _room_center(chest_room)
 	_boss_pos = Vector2i(boss_room.position.x + 5, boss_room.position.y + 5)
 	_stairs_pos = Vector2i(boss_room.position.x + 8, boss_room.position.y + 5)
-	_seal_pos = Vector2i(29, 21)  # ボス部屋入口
+	_seal_pos = Vector2i(30, 21)  # ボス部屋入口（部屋の壁位置）
 
 
 # --- パターンB: 二股 ---
@@ -109,14 +109,14 @@ func _generate_fork(grid: Array) -> void:
 	_carve_room(grid, boss_room)
 	_carve_corridor_h(grid, 10, 16, 23)
 	_carve_corridor_v(grid, 15, 21, 18)  # 分岐→宝箱
-	_carve_corridor_h(grid, 20, 28, 21)  # 分岐→ボス
+	_carve_corridor_h(grid, 20, 27, 21)  # 分岐→ボス手前まで
 
 	_rooms = [start_room, fork_room, chest_room, boss_room]
 	_player_start = _room_center(start_room)
 	_chest_pos = _room_center(chest_room)
 	_boss_pos = Vector2i(boss_room.position.x + 5, boss_room.position.y + 5)
 	_stairs_pos = Vector2i(boss_room.position.x + 8, boss_room.position.y + 5)
-	_seal_pos = Vector2i(27, 21)
+	_seal_pos = Vector2i(28, 21)  # ボス部屋入口
 
 
 # --- パターンC: L字 ---
@@ -133,14 +133,14 @@ func _generate_l_shape(grid: Array) -> void:
 	_carve_room(grid, boss_room)
 	_carve_corridor_h(grid, 10, 16, 11)  # 開始→宝箱
 	_carve_corridor_v(grid, 13, 20, 18)  # 宝箱→角
-	_carve_corridor_h(grid, 20, 28, 22)  # 角→ボス
+	_carve_corridor_h(grid, 20, 27, 22)  # 角→ボス手前まで
 
 	_rooms = [start_room, chest_room, corner_room, boss_room]
 	_player_start = _room_center(start_room)
 	_chest_pos = _room_center(chest_room)
 	_boss_pos = Vector2i(boss_room.position.x + 5, boss_room.position.y + 5)
 	_stairs_pos = Vector2i(boss_room.position.x + 8, boss_room.position.y + 5)
-	_seal_pos = Vector2i(27, 22)
+	_seal_pos = Vector2i(28, 22)  # ボス部屋入口
 
 
 # --- 描画ヘルパー ---
