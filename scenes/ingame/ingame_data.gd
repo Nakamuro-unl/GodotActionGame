@@ -24,7 +24,7 @@ const KNOWLEDGE_ICON_MAP: Dictionary = {
 	"K-303": "math_square",       # 平方
 	"K-304": "math_sqrt",         # 平方根
 	"K-305": "math_pythagorean",  # ピタゴラスの定理
-	"K-306": "math_equation",     # 一次方程式
+	"K-306": "skill_linear",      # 一次方程式(範囲攻撃)
 	# ステージ4: 近代
 	"K-401": "math_derivative",   # 微分
 	"K-402": "math_integral",     # 積分
@@ -39,6 +39,11 @@ const KNOWLEDGE_ICON_MAP: Dictionary = {
 	"K-504": "math_zero_vector",  # ゼロベクトル
 	"K-505": "math_topology",     # 位相変換
 	"K-506": "math_infinity",     # 無限の定義
+	# 範囲攻撃
+	"K-311": "skill_quadratic",   # 二次関数
+	"K-312": "skill_sine",        # 三角関数
+	"K-313": "skill_circle",      # 円の方程式
+	"K-314": "skill_exponential", # 指数関数
 }
 
 const ITEM_ICON_MAP: Dictionary = {

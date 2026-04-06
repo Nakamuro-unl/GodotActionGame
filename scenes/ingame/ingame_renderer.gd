@@ -10,7 +10,7 @@ const SPRITE_SCALE: float = 16.0 / 128.0
 const MOVE_DURATION: float = 0.12
 const ATLAS_TILE_SIZE: int = 128
 const ATLAS_COLS: int = 8
-const ATLAS_TILE_COUNT: int = 69
+const ATLAS_TILE_COUNT: int = 74
 const TILESET_SOURCE_ID: int = 0
 
 const STAGE_TILE_INDEX: Dictionary = {
