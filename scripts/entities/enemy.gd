@@ -30,7 +30,7 @@ enum AIPattern {
 
 ## ボスデータ: ステージ -> {name, value, attack, exp, theorem_id}
 const BOSS_DATA: Dictionary = {
-	1: {"name": "原始の王",   "value": 10,  "attack": 8,  "exp": 30,  "theorem_id": "K-104"},
+	1: {"name": "原始の王",   "value": 20,  "attack": 8,  "exp": 30,  "theorem_id": "K-104"},
 	2: {"name": "スフィンクス", "value": 24,  "attack": 12, "exp": 60,  "theorem_id": "K-205"},
 	3: {"name": "魔王",       "value": 49,  "attack": 18, "exp": 120, "theorem_id": "K-305"},
 	4: {"name": "計算機械",   "value": 100, "attack": 22, "exp": 200, "theorem_id": "K-405"},

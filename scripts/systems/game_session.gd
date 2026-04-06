@@ -14,6 +14,8 @@ signal enemy_ghostified_visual()
 signal player_damaged_visual(amount: int)
 signal player_leveled_up_visual(new_level: int)
 signal combo_visual(combo_count: int)
+signal boss_appeared(boss_name: String)
+signal boss_defeated_stairs(stairs_pos: Vector2i)
 
 const MapGen = preload("res://scripts/systems/map_generator.gd")
 const TurnMgr = preload("res://scripts/systems/turn_manager.gd")
@@ -47,6 +49,7 @@ var _start_chest_pos: Vector2i = Vector2i(-1, -1)  # 開始部屋の固定宝箱
 var current_stage: int = 1
 var current_floor: int = 1
 var seed_value: int = 0
+var _is_boss_floor: bool = false
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var _is_game_over: bool = false
 var _floor_builder: FloorBuilder
@@ -111,6 +114,18 @@ func _generate_floor() -> void:
 	_floor_builder.place_gimmicks(self, current_stage)
 	minimap.init_floor(MapGen.GRID_WIDTH, MapGen.GRID_HEIGHT)
 	minimap.explore_around(player.grid_pos, 4)
+
+	# ボスフロア: 階段を隠す（ボス撃破で出現）
+	_is_boss_floor = is_boss_floor
+	if is_boss_floor:
+		var sp: Vector2i = map_generator.get_stairs_position()
+		grid[sp.y][sp.x] = MapGen.Tile.FLOOR  # 階段を床に
+		# ボス登場演出シグナル
+		for enemy in enemies:
+			if enemy.ai_pattern == EnemyScript.AIPattern.BOSS:
+				boss_appeared.emit(enemy.enemy_name)
+				break
+
 	floor_changed.emit(current_floor, current_stage)
 
 
@@ -307,10 +322,16 @@ func _on_enemy_defeated(enemy: Node) -> void:
 	if player.level > level_before:
 		player_leveled_up_visual.emit(player.level)
 
-	# ボス撃破: 定理を確定ドロップ
+	# ボス撃破: 定理を確定ドロップ + 階段出現
 	if enemy.ai_pattern == EnemyScript.AIPattern.BOSS:
 		score_system.register_boss_kill(0)
 		_drop_boss_theorem()
+		# 階段を出現させる
+		if _is_boss_floor:
+			var sp: Vector2i = map_generator.get_stairs_position()
+			grid[sp.y][sp.x] = MapGen.Tile.STAIRS
+			boss_defeated_stairs.emit(sp)
+			message.emit("階段が現れた!")
 
 	enemy_defeated_visual.emit(enemy)
 	if enemy.value == 0:

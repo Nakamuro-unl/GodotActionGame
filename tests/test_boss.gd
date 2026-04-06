@@ -54,7 +54,7 @@ func test_boss_has_fixed_value() -> void:
 		_session.interact_stairs()
 	for enemy in _session.enemies:
 		if enemy.ai_pattern == ES.AIPattern.BOSS:
-			assert_int(enemy.value).is_equal(10)  # 原始の王: 固定10
+			assert_int(enemy.value).is_equal(20)  # 原始の王: 固定20
 			break
 
 
@@ -133,7 +133,7 @@ func test_all_stage_bosses_defined() -> void:
 func test_boss_data_has_fields() -> void:
 	var data: Dictionary = ES.BOSS_DATA[1]
 	assert_str(data["name"]).is_equal("原始の王")
-	assert_int(data["value"]).is_equal(10)
+	assert_int(data["value"]).is_equal(20)
 	assert_bool(data.has("attack")).is_true()
 	assert_bool(data.has("exp")).is_true()
 	assert_bool(data.has("theorem_id")).is_true()

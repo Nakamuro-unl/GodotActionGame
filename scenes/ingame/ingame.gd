@@ -59,6 +59,8 @@ func _ready() -> void:
 	session.skill_slot_full.connect(_on_skill_slot_full)
 	session.enemy_defeated_visual.connect(_on_enemy_defeated_visual)
 	session.enemy_ghostified_visual.connect(_on_enemy_ghostified_visual)
+	session.boss_appeared.connect(_on_boss_appeared)
+	session.boss_defeated_stairs.connect(_on_boss_defeated_stairs)
 	session.player_damaged_visual.connect(_on_player_damaged_visual)
 	session.player_leveled_up_visual.connect(_on_level_up)
 	session.combo_visual.connect(_on_combo)
@@ -416,6 +418,24 @@ func _show_knowledge_popup(knowledge_id: String) -> void:
 
 func _show_item_popup(item_id: String) -> void:
 	Actions.show_item_popup(_popup, item_id)
+
+
+# --- ボス演出 ---
+
+func _on_boss_appeared(boss_name: String) -> void:
+	_audio.play("boss_appear")
+	_screen_fx.level_up_effect(0)  # 流用: フラッシュ演出
+	# テキスト上書き
+	await get_tree().create_timer(0.2).timeout
+	_add_message("-- %s が現れた! --" % boss_name)
+	_add_message("階段はボスを倒すまで現れない!")
+
+
+func _on_boss_defeated_stairs(stairs_pos: Vector2i) -> void:
+	_audio.play("stairs_appear")
+	_renderer.rebuild_map(session.grid, session.current_stage)
+	_update_minimap()
+	_add_message("ボスを倒した! 階段が現れた!")
 
 
 # --- スキルスロット満杯時の入れ替え ---

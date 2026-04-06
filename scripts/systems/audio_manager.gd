@@ -32,6 +32,8 @@ func _load_sounds() -> void:
 		"gameover": "res://assets/sounds/gameover.wav",
 		"menu": "res://assets/sounds/menu.wav",
 		"miss": "res://assets/sounds/miss.wav",
+		"boss_appear": "res://assets/sounds/boss_appear.wav",
+		"stairs_appear": "res://assets/sounds/stairs_appear.wav",
 	}
 	for id in sound_files:
 		var path: String = sound_files[id]
