@@ -14,6 +14,13 @@ func _ready() -> void:
 	$HBox/BtnPrev.pressed.connect(_prev_page)
 	$HBox/BtnNext.pressed.connect(_next_page)
 	$HBox/BtnBack.pressed.connect(_go_back)
+	$HBox/BtnGuide.pressed.connect(_open_guide)
+
+
+const GUIDE_URL: String = "https://nakamuro-unl.github.io/mathmage-web/guide/index.html"
+
+func _open_guide() -> void:
+	OS.shell_open(GUIDE_URL)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -100,7 +107,5 @@ func _build_pages() -> void:
 		"  幽霊化: 回数 x30\n\n" +
 		"ゲームオーバーでもスコアは残る!\n" +
 		"ランキングTOP10に挑戦しよう!\n\n" +
-		"[攻略ガイド]\n" +
-		"nakamuro-unl.github.io/mathmage-web/guide/\n\n" +
 		"(Esc: タイトルへ)"
 	)
