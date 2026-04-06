@@ -35,7 +35,11 @@ const KNOWLEDGE_DB: Dictionary = {
 	"K-303": {"name": "平方",         "category": "formula",    "stage": 3, "skill_id": "square",   "field_effect": "enlarge_stone"},
 	"K-304": {"name": "平方根",       "category": "formula",    "stage": 3, "skill_id": "sqrt",     "field_effect": "shrink_obstacle"},
 	"K-305": {"name": "ピタゴラスの定理", "category": "theorem", "stage": 3, "skill_id": "sqrt",    "field_effect": "diagonal_shortcut"},
-	"K-306": {"name": "一次方程式",   "category": "theorem",    "stage": 3,                          "field_effect": "equation_door"},
+	"K-306": {"name": "一次方程式",   "category": "theorem",    "stage": 3, "skill_id": "linear_strike", "field_effect": "equation_door"},
+	"K-311": {"name": "二次関数",     "category": "formula",    "stage": 3, "skill_id": "parabola_shot"},
+	"K-312": {"name": "三角関数",     "category": "formula",    "stage": 4, "skill_id": "wave_attack"},
+	"K-313": {"name": "円の方程式",   "category": "formula",    "stage": 4, "skill_id": "circle_burst"},
+	"K-314": {"name": "指数関数",     "category": "formula",    "stage": 5, "skill_id": "exponential_atk"},
 	# ステージ4: 近代
 	"K-401": {"name": "微分",         "category": "formula",    "stage": 4, "skill_id": "derivative", "field_effect": "detect_speed"},
 	"K-402": {"name": "積分",         "category": "formula",    "stage": 4, "skill_id": "integral",   "field_effect": "connect_platforms"},

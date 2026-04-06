@@ -37,6 +37,12 @@ const SKILLS: Dictionary = {
 	"limit":       {"name": "リミット",       "mp_cost": 12, "type": "func", "param": "limit"},
 	# 回数制限付き（ステージ4以降）
 	"zero_mul":    {"name": "ゼロ乗算",     "mp_cost": 0, "type": "mul", "param": 0, "max_uses": 3},
+	# 範囲攻撃（ステージ3以降）
+	"linear_strike":  {"name": "一次関数",   "mp_cost": 4,  "type": "range", "range_func": "linear",      "range_damage": 5, "range_length": 8},
+	"parabola_shot":  {"name": "二次関数",   "mp_cost": 6,  "type": "range", "range_func": "quadratic",   "range_damage": 3, "range_length": 6},
+	"wave_attack":    {"name": "三角関数",   "mp_cost": 7,  "type": "range", "range_func": "sine",        "range_damage": 4, "range_length": 8},
+	"circle_burst":   {"name": "円の方程式", "mp_cost": 8,  "type": "range", "range_func": "circle",      "range_damage": 3, "range_length": 2},
+	"exponential_atk":{"name": "指数関数",   "mp_cost": 10, "type": "range", "range_func": "exponential", "range_damage": 0, "range_length": 5},
 }
 
 
@@ -66,6 +72,81 @@ func use_skill(skill_id: String, player: Node, enemy: Node) -> Dictionary:
 		player.consume_skill_use(skill_id)
 
 	return {"success": true, "mp_cost": mp_cost, "old_value": old_value, "new_value": new_value}
+
+
+## 範囲攻撃を使用する
+## enemies: フロア上の全敵リスト
+## 戻り値: {success, hit_enemies: [{enemy, old_value, new_value}], cells: [Vector2i]}
+func use_range_skill(skill_id: String, player: Node, enemies: Array, facing: Vector2i) -> Dictionary:
+	if not SKILLS.has(skill_id):
+		return {"success": false, "hit_enemies": [], "cells": []}
+
+	var skill: Dictionary = SKILLS[skill_id]
+	if skill["type"] != "range":
+		return {"success": false, "hit_enemies": [], "cells": []}
+
+	var mp_cost: int = skill["mp_cost"]
+	if not player.consume_mp(mp_cost):
+		return {"success": false, "hit_enemies": [], "cells": []}
+
+	var GC: GDScript = load("res://scripts/systems/graph_calculator.gd")
+	var origin: Vector2i = player.grid_pos
+	var length: int = int(skill["range_length"])
+	var func_name: String = skill["range_func"]
+
+	# 座標計算
+	var cells: Array = []
+	match func_name:
+		"linear":
+			cells = GC.linear(origin, facing, length)
+		"quadratic":
+			cells = GC.quadratic(origin, facing, length)
+		"sine":
+			cells = GC.sine(origin, facing, length, 1)
+		"circle":
+			cells = GC.circle(origin, length)
+		"exponential":
+			cells = GC.exponential(origin, facing, length)
+
+	# ダメージ配列（指数関数は距離で変化）
+	var dmg_list: Array = []
+	if func_name == "exponential":
+		dmg_list = GC.exponential_damage(length)
+	else:
+		for i in cells.size():
+			dmg_list.append(int(skill["range_damage"]))
+
+	# 各セルの敵に効果適用
+	var hit_enemies: Array = []
+	for i in cells.size():
+		var cell: Vector2i = cells[i]
+		var dmg: int = dmg_list[i] if i < dmg_list.size() else int(skill["range_damage"])
+		for enemy in enemies:
+			if enemy.grid_pos == cell and enemy.state != 2:  # DEFEATED=2
+				var old_val: int = enemy.value
+				enemy.apply_value_change(-dmg)
+				hit_enemies.append({"enemy": enemy, "old_value": old_val, "new_value": enemy.value})
+
+	return {"success": true, "hit_enemies": hit_enemies, "cells": cells}
+
+
+## 範囲攻撃の座標プレビューを取得（発動前の表示用）
+func get_range_preview(skill_id: String, origin: Vector2i, facing: Vector2i) -> Array:
+	if not SKILLS.has(skill_id):
+		return []
+	var skill: Dictionary = SKILLS[skill_id]
+	if skill["type"] != "range":
+		return []
+
+	var GC: GDScript = load("res://scripts/systems/graph_calculator.gd")
+	var length: int = int(skill["range_length"])
+	match skill["range_func"]:
+		"linear": return GC.linear(origin, facing, length)
+		"quadratic": return GC.quadratic(origin, facing, length)
+		"sine": return GC.sine(origin, facing, length, 1)
+		"circle": return GC.circle(origin, length)
+		"exponential": return GC.exponential(origin, facing, length)
+	return []
 
 
 ## 技情報を取得
