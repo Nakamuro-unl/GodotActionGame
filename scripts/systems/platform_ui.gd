@@ -88,7 +88,9 @@ static func get_hud_layout(platform: Platform) -> Dictionary:
 ## 画面向きと解像度を適用する
 static func apply_screen_config(platform: Platform) -> void:
 	var config: Dictionary = get_screen_config(platform)
-	DisplayServer.screen_set_orientation(config["orientation"])
+	# Web版では画面向き変更がサポートされていないのでスキップ
+	if OS.get_name() != "Web":
+		DisplayServer.screen_set_orientation(config["orientation"])
 
 
 ## キーボード操作ヒントテキスト
