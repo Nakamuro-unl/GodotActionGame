@@ -91,9 +91,9 @@ func submit_score(data: Dictionary, player_name: String = "Anonymous") -> void:
 	_http_post.request(url, _headers(), HTTPClient.METHOD_POST, JSON.stringify(body))
 
 
-func _on_get_completed(result: int, code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
-	if result != HTTPRequest.RESULT_SUCCESS or code != 200:
-		push_warning("SupabaseRanking: fetch failed (code=%d)" % code)
+func _on_get_completed(result: int, code: int, _resp_headers: PackedStringArray, body: PackedByteArray) -> void:
+	if code != 200:
+		push_warning("SupabaseRanking: fetch failed (result=%d, code=%d, body=%s)" % [result, code, body.get_string_from_utf8().substr(0, 200)])
 		rankings_loaded.emit([])
 		return
 	var json: JSON = JSON.new()
