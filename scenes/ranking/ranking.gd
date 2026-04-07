@@ -60,19 +60,11 @@ func _on_rankings_loaded(rankings: Array) -> void:
 	if rankings.is_empty():
 		text += "  まだ記録がありません\n"
 	else:
-		text += " #   スコア     フロア  撃破  名前\n"
-		text += "--------------------------------------\n"
 		for i in mini(rankings.size(), 20):
-			var entry: Dictionary = rankings[i]
-			var cleared_mark: String = "*" if entry.get("cleared", false) else ""
-			text += "%2d  %7d    %2dF   %3d体  %s%s\n" % [
-				i + 1,
-				int(entry.get("score", 0)),
-				int(entry.get("floor_reached", 0)),
-				int(entry.get("enemies_defeated", 0)),
-				str(entry.get("player_name", "---")),
-				cleared_mark,
-			]
+			var e: Dictionary = rankings[i]
+			var cleared_mark: String = " CLEAR" if e.get("cleared", false) else ""
+			text += "%d. %s - %d pt\n" % [i + 1, str(e.get("player_name", "---")), int(e.get("score", 0))]
+			text += "   %dF / %d体撃破%s\n" % [int(e.get("floor_reached", 0)), int(e.get("enemies_defeated", 0)), cleared_mark]
 
 	text += "\n(左右: ローカル/オンライン切替)\n"
 	text += "(決定キーでタイトルへ)"
@@ -92,17 +84,14 @@ func _display_local_ranking() -> void:
 	if ranking.is_empty():
 		text += "  まだ記録がありません\n"
 	else:
-		text += " #   スコア     フロア  撃破  コンボ  結果\n"
-		text += "--------------------------------------------\n"
 		for i in ranking.size():
-			var entry: Dictionary = ranking[i]
-			var cleared_mark: String = "CLEAR" if entry.get("cleared", false) else "OVER"
-			text += "%2d  %7d    %2dF   %3d体   x%d    %s\n" % [
-				i + 1,
-				int(entry.get("score", 0)),
-				int(entry.get("floor_reached", 0)),
-				int(entry.get("enemies_defeated", 0)),
-				int(entry.get("max_combo", 0)),
+			var e: Dictionary = ranking[i]
+			var cleared_mark: String = " CLEAR" if e.get("cleared", false) else ""
+			text += "%d. %d pt\n" % [i + 1, int(e.get("score", 0))]
+			text += "   %dF / %d体撃破 / x%dコンボ%s\n" % [
+				int(e.get("floor_reached", 0)),
+				int(e.get("enemies_defeated", 0)),
+				int(e.get("max_combo", 0)),
 				cleared_mark,
 			]
 
