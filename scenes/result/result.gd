@@ -30,9 +30,13 @@ func _ready() -> void:
 
 func _on_name_submitted(player_name: String) -> void:
 	_submit_online(player_name)
+	# ダイアログを完全削除
+	if _name_dialog:
+		_name_dialog.queue_free()
+		_name_dialog = null
 	var label: Label = get_node_or_null("ResultLabel")
 	if label:
-		label.text += "\n登録名: %s" % player_name
+		label.text += "\n登録名: %s\n\n(タップ or 決定キーでタイトルへ)" % player_name
 
 
 func _submit_online(player_name: String) -> void:
