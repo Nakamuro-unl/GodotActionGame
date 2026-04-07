@@ -16,7 +16,8 @@ func _ready() -> void:
 	_supabase = SupabaseRanking.new()
 	add_child(_supabase)
 	_supabase.rankings_loaded.connect(_on_rankings_loaded)
-	_supabase.fetch_rankings()
+	# 1フレーム待ってからfetch（HTTPRequest初期化完了を保証）
+	_supabase.call_deferred("fetch_rankings")
 
 
 func _unhandled_input(event: InputEvent) -> void:

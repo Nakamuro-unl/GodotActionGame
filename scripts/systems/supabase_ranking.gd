@@ -26,7 +26,9 @@ var _key: String = "sb_publishable_iWof67ZoMWsL8Ii5zTtGMg_aTxRF5xv"
 
 func _ready() -> void:
 	_http_get = HTTPRequest.new()
+	_http_get.use_threads = false
 	_http_post = HTTPRequest.new()
+	_http_post.use_threads = false
 	add_child(_http_get)
 	add_child(_http_post)
 	_http_get.request_completed.connect(_on_get_completed)
