@@ -19,8 +19,9 @@ const MAX_NAME_LEN: int = 12
 
 var _http_get: HTTPRequest
 var _http_post: HTTPRequest
-var _url: String = ""
-var _key: String = ""
+## anon keyは公開キー（RLS+DB制約+アプリバリデーションで保護）
+var _url: String = "https://eyhxvjvudgfepcywxcvw.supabase.co"
+var _key: String = "sb_publishable_iWof67ZoMWsL8Ii5zTtGMg_aTxRF5xv"
 
 
 func _ready() -> void:
@@ -30,25 +31,6 @@ func _ready() -> void:
 	add_child(_http_post)
 	_http_get.request_completed.connect(_on_get_completed)
 	_http_post.request_completed.connect(_on_post_completed)
-	_load_config()
-
-
-func _load_config() -> void:
-	# 設定ファイルから読み込み（なければデフォルト値）
-	var config_path: String = "res://supabase_config.cfg"
-	if FileAccess.file_exists("user://supabase_config.cfg"):
-		config_path = "user://supabase_config.cfg"
-
-	var config: ConfigFile = ConfigFile.new()
-	if config.load(config_path) == OK:
-		_url = config.get_value("supabase", "url", "")
-		_key = config.get_value("supabase", "anon_key", "")
-
-	# フォールバック（base64エンコード済み）
-	if _url == "":
-		_url = Marshalls.base64_to_utf8("aHR0cHM6Ly9leWh4dmp2dWRnZmVwY3l3eGN2dy5zdXBhYmFzZS5jbw==")
-	if _key == "":
-		_key = Marshalls.base64_to_utf8("c2JfcHVibGlzaGFibGVfaVdvZjY3Wm9NV3NMOElpNXpUdEdNZ19hVHhSRjV4dg==")
 
 
 func _headers() -> PackedStringArray:
