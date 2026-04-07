@@ -8,3 +8,6 @@
 
 # Build outputs
 /builds/
+
+# Secrets
+supabase_config.cfg
