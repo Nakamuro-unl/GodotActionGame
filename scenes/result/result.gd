@@ -1,13 +1,15 @@
 extends Control
 
-## リザルト画面。スコア内訳を表示し、ランキングに保存する。
+## リザルト画面。スコア内訳を表示し、名前入力後にランキング送信。
 
 const GMS = preload("res://scripts/autoload/game_manager.gd")
 const ScoreSys = preload("res://scripts/systems/score_system.gd")
 const SupabaseRanking = preload("res://scripts/systems/supabase_ranking.gd")
+const NameDialogScene = preload("res://scenes/ui/name_input_dialog.tscn")
 
 var _result: Dictionary = {}
 var _supabase: Node
+var _name_dialog: Node
 
 
 func _ready() -> void:
@@ -16,32 +18,51 @@ func _ready() -> void:
 		_result = gm.last_result
 	_display_result()
 	_save_ranking()
-	_submit_online()
 	$BackButton.pressed.connect(_go_back)
 
+	# 名前入力ダイアログを表示
+	if not _result.is_empty():
+		_name_dialog = NameDialogScene.instantiate()
+		add_child(_name_dialog)
+		_name_dialog.name_submitted.connect(_on_name_submitted)
+		_name_dialog.show_dialog()
 
-func _submit_online() -> void:
+
+func _on_name_submitted(player_name: String) -> void:
+	_submit_online(player_name)
+	var label: Label = get_node_or_null("ResultLabel")
+	if label:
+		label.text += "\n登録名: %s" % player_name
+
+
+func _submit_online(player_name: String) -> void:
 	if _result.is_empty():
 		return
 	_supabase = SupabaseRanking.new()
 	add_child(_supabase)
 	_supabase.score_submitted.connect(_on_score_submitted)
-	_supabase.submit_score(_result)
+	_supabase.submit_score(_result, player_name)
 
 
 func _on_score_submitted(success: bool) -> void:
-	if success:
-		var label: Label = get_node_or_null("ResultLabel")
-		if label:
+	var label: Label = get_node_or_null("ResultLabel")
+	if label:
+		if success:
 			label.text += "\n(オンラインランキングに登録しました)"
+		else:
+			label.text += "\n(オンライン登録に失敗しました)"
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if _name_dialog and _name_dialog.is_showing():
+		return
 	if event.is_action_pressed("ui_accept"):
 		_go_back()
 
 
 func _go_back() -> void:
+	if _name_dialog and _name_dialog.is_showing():
+		return
 	var gm: Node = get_node_or_null("/root/GameManager")
 	if gm:
 		gm.change_state(GMS.State.TITLE)
@@ -81,8 +102,7 @@ func _display_result() -> void:
 	text += "幽霊化ペナルティ: %d\n\n" % _result.get("ghost_penalty", 0)
 	text += "============================\n"
 	text += "  総合スコア:  %d\n" % _result.get("total", 0)
-	text += "============================\n\n"
-	text += "(決定キーでタイトルへ)"
+	text += "============================\n"
 
 	label.text = text
 
@@ -90,7 +110,6 @@ func _display_result() -> void:
 func _save_ranking() -> void:
 	if _result.is_empty():
 		return
-	# ランキングファイルの読み込み
 	var ranking: Array = _load_ranking()
 	var entry: Dictionary = {
 		"score": _result.get("total", 0),
@@ -103,7 +122,6 @@ func _save_ranking() -> void:
 		"seed": _result.get("seed", 0),
 		"date": Time.get_datetime_string_from_system(),
 	}
-	# ソートして追加
 	ranking.append(entry)
 	ranking.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a["score"] > b["score"])
 	while ranking.size() > 10:
