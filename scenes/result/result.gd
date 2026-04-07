@@ -4,8 +4,10 @@ extends Control
 
 const GMS = preload("res://scripts/autoload/game_manager.gd")
 const ScoreSys = preload("res://scripts/systems/score_system.gd")
+const SupabaseRanking = preload("res://scripts/systems/supabase_ranking.gd")
 
 var _result: Dictionary = {}
+var _supabase: Node
 
 
 func _ready() -> void:
@@ -14,7 +16,24 @@ func _ready() -> void:
 		_result = gm.last_result
 	_display_result()
 	_save_ranking()
+	_submit_online()
 	$BackButton.pressed.connect(_go_back)
+
+
+func _submit_online() -> void:
+	if _result.is_empty():
+		return
+	_supabase = SupabaseRanking.new()
+	add_child(_supabase)
+	_supabase.score_submitted.connect(_on_score_submitted)
+	_supabase.submit_score(_result)
+
+
+func _on_score_submitted(success: bool) -> void:
+	if success:
+		var label: Label = get_node_or_null("ResultLabel")
+		if label:
+			label.text += "\n(オンラインランキングに登録しました)"
 
 
 func _unhandled_input(event: InputEvent) -> void:
