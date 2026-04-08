@@ -90,7 +90,7 @@ static func update_vpad(vpad: Node, player: Node, session: Node) -> void:
 			var mp_cost: int = int(info.get("mp_cost", 0))
 			var display_name: String = info.get("name", sid)
 			if mp_cost > 0:
-				display_name += "\n%d" % mp_cost
+				display_name += "\nMP%d" % mp_cost
 			names.append(display_name)
 			var icon_name: String = _find_skill_icon(sid, session)
 			icons.append(Data.get_icon_path(icon_name))
