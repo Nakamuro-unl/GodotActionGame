@@ -69,13 +69,13 @@ func update_skill_labels(names: Array[String], icon_paths: Array[String] = []) -
 		var btn: Button = get_node_or_null("Skills/Skill%d" % (i + 1))
 		if btn:
 			btn.expand_icon = true
-			btn.add_theme_constant_override("icon_max_width", 24)
+			btn.clip_text = false
+			btn.add_theme_constant_override("icon_max_width", 20)
 			btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			btn.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
 			if i < icon_paths.size() and icon_paths[i] != "":
 				if ResourceLoader.exists(icon_paths[i]):
 					btn.icon = load(icon_paths[i])
-					# 短縮名を下に小さく
 					btn.text = names[i] if names[i] != "---" else ""
 				else:
 					btn.icon = null
