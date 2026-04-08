@@ -33,10 +33,10 @@ func _unhandled_input(event: InputEvent) -> void:
 func _skip() -> void:
 	match _phase:
 		Phase.LOGO:
-			_phase = Phase.TITLE
+			_skippable = false
 			_play_title()
 		Phase.TITLE:
-			_phase = Phase.DONE
+			_skippable = false
 			_go_to_menu()
 
 
@@ -74,6 +74,7 @@ func _go_to_menu() -> void:
 	if _phase == Phase.DONE:
 		return
 	_phase = Phase.DONE
+	_skippable = false
 	var gm: Node = get_node_or_null("/root/GameManager")
 	if gm:
 		gm.change_state(GMS.State.TITLE)
