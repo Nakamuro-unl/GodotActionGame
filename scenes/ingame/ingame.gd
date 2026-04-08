@@ -294,11 +294,16 @@ func _do_wait() -> void:
 
 
 func _do_interact() -> void:
+	var old_stage: int = session.current_stage
 	var result: Dictionary = session.interact(_facing)
 	match result["type"]:
 		"stairs":
 			_screen_fx.fade_transition(0.6)
 			await _screen_fx.fade_completed
+			# ステージが変わった場合はクリア演出を表示
+			if session.current_stage != old_stage:
+				_screen_fx.stage_clear_effect(old_stage, session.current_stage)
+				await _screen_fx.stage_clear_completed
 			_renderer.rebuild_map(session.grid, session.current_stage)
 			_renderer.update_entities_immediate(session.player.grid_pos, session.enemies, $Camera2D)
 			_update_hud()
