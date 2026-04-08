@@ -62,9 +62,12 @@ static func update_skill_slots(container: HBoxContainer, player: Node, session: 
 
 			var info: Dictionary = session.combat_system.get_skill_info(sid)
 			var lbl: Label = Label.new()
-			lbl.text = "[%d]%s" % [i + 1, info.get("name", sid)]
-			lbl.add_theme_font_size_override("font_size", 10)
 			var mp_cost: int = int(info.get("mp_cost", 0))
+			if mp_cost > 0:
+				lbl.text = "[%d]%s(%d)" % [i + 1, info.get("name", sid), mp_cost]
+			else:
+				lbl.text = "[%d]%s" % [i + 1, info.get("name", sid)]
+			lbl.add_theme_font_size_override("font_size", 10)
 			if player.mp < mp_cost:
 				lbl.add_theme_color_override("font_color", Color(0.4, 0.4, 0.4))
 			slot_box.add_child(lbl)
@@ -83,7 +86,12 @@ static func update_vpad(vpad: Node, player: Node, session: Node) -> void:
 			names.append("---")
 			icons.append("")
 		else:
-			names.append(session.combat_system.get_skill_info(sid).get("name", sid))
+			var info: Dictionary = session.combat_system.get_skill_info(sid)
+			var mp_cost: int = int(info.get("mp_cost", 0))
+			var display_name: String = info.get("name", sid)
+			if mp_cost > 0:
+				display_name += "\n%d" % mp_cost
+			names.append(display_name)
 			var icon_name: String = _find_skill_icon(sid, session)
 			icons.append(Data.get_icon_path(icon_name))
 	vpad.update_skill_labels(names, icons)

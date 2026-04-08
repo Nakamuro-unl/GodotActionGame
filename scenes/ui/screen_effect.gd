@@ -76,6 +76,48 @@ func boss_appear_effect(boss_name: String) -> void:
 	)
 
 
+## ステージクリア演出（ボスフロアクリア後の階段降下時）
+signal stage_clear_completed()
+
+func stage_clear_effect(cleared_stage: int, next_stage: int) -> void:
+	var stage_names: Array[String] = ["", "石器時代", "古代文明", "中世", "近代", "宇宙"]
+	var cleared_name: String = stage_names[cleared_stage] if cleared_stage < stage_names.size() else "???"
+	var next_name: String = stage_names[next_stage] if next_stage < stage_names.size() else "???"
+
+	visible = true
+	_is_playing = true
+	$ColorRect.color = Color(0, 0, 0, 1)
+	$Label.text = ""
+
+	var tween: Tween = create_tween()
+	# クリア表示
+	tween.tween_callback(func() -> void:
+		$Label.text = "- Stage %d %s -\n  CLEAR!" % [cleared_stage, cleared_name]
+		$Label.add_theme_color_override("font_color", Color(1, 0.85, 0.3))
+	)
+	tween.tween_interval(1.8)
+	# フェードアウト
+	tween.tween_callback(func() -> void:
+		$Label.text = ""
+	)
+	tween.tween_interval(0.3)
+	# 次ステージ表示
+	tween.tween_callback(func() -> void:
+		$Label.text = "Stage %d\n%s" % [next_stage, next_name]
+		$Label.add_theme_color_override("font_color", Color(0.7, 0.9, 1.0))
+	)
+	tween.tween_interval(1.5)
+	# フェードイン
+	tween.tween_property($ColorRect, "color", Color(0, 0, 0, 0), 0.5)
+	tween.tween_callback(func() -> void:
+		$Label.text = ""
+		$Label.remove_theme_color_override("font_color")
+		_is_playing = false
+		visible = false
+		stage_clear_completed.emit()
+	)
+
+
 ## コンボ表示（画面中央にポップアップ）
 func combo_popup(combo_count: int) -> void:
 	visible = true
