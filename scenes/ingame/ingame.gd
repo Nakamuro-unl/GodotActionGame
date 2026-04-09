@@ -356,55 +356,36 @@ func _after_turn_animated() -> void:
 func _enter_range_preview(slot_index: int, skill_id: String) -> void:
 	_range_preview_mode = true
 	_range_skill_slot = slot_index
-	var cells: Array = session.combat_system.get_range_preview(skill_id, session.player.grid_pos, _facing)
-	_renderer.show_range_preview(cells, session.enemies)
+	Actions.enter_range_preview(session, _renderer, slot_index, _facing)
 	var info: Dictionary = session.combat_system.get_skill_info(skill_id)
-	_add_message("%s: 向き調整→決定で発動 / Escでキャンセル" % info["name"])
+	_add_message("%s: 向き調整→決定 / Escキャンセル" % info["name"])
 
 
 func _handle_range_preview(event: InputEvent) -> void:
-	# 向き変更でプレビュー更新
 	var new_facing: Vector2i = Vector2i.ZERO
 	if event.is_action_pressed("ui_up"): new_facing = Vector2i.UP
 	elif event.is_action_pressed("ui_down"): new_facing = Vector2i.DOWN
 	elif event.is_action_pressed("ui_left"): new_facing = Vector2i.LEFT
 	elif event.is_action_pressed("ui_right"): new_facing = Vector2i.RIGHT
 	elif event.is_action_pressed("ui_accept"):
-		_fire_range_skill()
-		return
+		_fire_range_skill(); return
 	elif event.is_action_pressed("ui_cancel"):
-		_cancel_range_preview()
-		return
-	else:
-		return
-
+		_cancel_range_preview(); return
+	else: return
 	if new_facing != Vector2i.ZERO:
 		_facing = new_facing
 		_renderer.update_player_facing(_facing)
-		var skill_id: String = session.player.skill_slots[_range_skill_slot]
-		var cells: Array = session.combat_system.get_range_preview(skill_id, session.player.grid_pos, _facing)
-		_renderer.show_range_preview(cells, session.enemies)
+		Actions.enter_range_preview(session, _renderer, _range_skill_slot, _facing)
 	get_viewport().set_input_as_handled()
 
 
 func _fire_range_skill() -> void:
-	_renderer.hide_range_preview()
 	_range_preview_mode = false
-	var skill_id: String = session.player.skill_slots[_range_skill_slot]
-	var result: Dictionary = session.combat_system.use_range_skill(skill_id, session.player, session.enemies, _facing)
+	var result: Dictionary = Actions.fire_range_skill(session, _renderer, _audio, _range_skill_slot, _facing)
 	if result["success"]:
+		var skill_id: String = session.player.skill_slots[_range_skill_slot]
 		var info: Dictionary = session.combat_system.get_skill_info(skill_id)
-		var hit_count: int = result["hit_enemies"].size()
-		_add_message("%s 発動! %d体にヒット!" % [info["name"], hit_count])
-		_renderer.animate_range_attack(result["cells"], self)
-		_audio.play("hit")
-		session.score_system.register_turn()
-		session.turn_manager.execute_player_action()
-		# 撃破チェック
-		for hit in result["hit_enemies"]:
-			var enemy: Node = hit["enemy"]
-			if enemy.state == 2:  # DEFEATED
-				session._on_enemy_defeated(enemy)
+		_add_message("%s 発動! %d体にヒット!" % [info["name"], result["hit_enemies"].size()])
 		_after_turn_animated()
 	else:
 		_add_message("MP不足!")
@@ -412,7 +393,7 @@ func _fire_range_skill() -> void:
 
 
 func _cancel_range_preview() -> void:
-	_renderer.hide_range_preview()
+	Actions.cancel_range_preview(_renderer)
 	_range_preview_mode = false
 	_range_skill_slot = -1
 	_add_message("キャンセル")
