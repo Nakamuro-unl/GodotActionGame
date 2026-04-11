@@ -4,10 +4,11 @@ extends Node
 ## キーは設定ファイルから読み込み、ソースにはフォールバック値のみ。
 
 signal rankings_loaded(rankings: Array)
+signal rank_loaded(rank: int)
 signal score_submitted(success: bool)
 
 const TABLE: String = "rankings"
-const TOP_LIMIT: int = 20
+const TOP_LIMIT: int = 10
 
 ## バリデーション定数
 const MAX_SCORE: int = 999999
@@ -19,6 +20,7 @@ const MAX_NAME_LEN: int = 12
 
 var _http_get: HTTPRequest
 var _http_post: HTTPRequest
+var _http_rank: HTTPRequest
 ## anon keyは公開キー（RLS+DB制約+アプリバリデーションで保護）
 var _url: String = "https://eyhxvjvudgfepcywxcvw.supabase.co"
 var _key: String = "sb_publishable_iWof67ZoMWsL8Ii5zTtGMg_aTxRF5xv"
@@ -31,10 +33,15 @@ func _ready() -> void:
 	_http_post = HTTPRequest.new()
 	_http_post.use_threads = false
 	_http_post.accept_gzip = false
+	_http_rank = HTTPRequest.new()
+	_http_rank.use_threads = false
+	_http_rank.accept_gzip = false
 	add_child(_http_get)
 	add_child(_http_post)
+	add_child(_http_rank)
 	_http_get.request_completed.connect(_on_get_completed)
 	_http_post.request_completed.connect(_on_post_completed)
+	_http_rank.request_completed.connect(_on_rank_completed)
 
 
 func _headers() -> PackedStringArray:
@@ -47,13 +54,29 @@ func _headers() -> PackedStringArray:
 	])
 
 
-## TOP20ランキングを取得
+## TOP10ランキングを取得
 func fetch_rankings() -> void:
 	if _url == "":
 		rankings_loaded.emit([])
 		return
 	var url: String = "%s/rest/v1/%s?select=*&order=score.desc&limit=%d" % [_url, TABLE, TOP_LIMIT]
 	_http_get.request(url, _headers(), HTTPClient.METHOD_GET)
+
+
+## 指定スコアの順位を取得（score以上の件数+1 = 順位）
+func fetch_my_rank(score: int) -> void:
+	if _url == "" or score <= 0:
+		rank_loaded.emit(-1)
+		return
+	var headers: PackedStringArray = PackedStringArray([
+		"apikey: %s" % _key,
+		"Authorization: Bearer %s" % _key,
+		"Content-Type: application/json",
+		"Accept-Encoding: identity",
+		"Prefer: count=exact",
+	])
+	var url: String = "%s/rest/v1/%s?select=id&score=gt.%d&limit=0" % [_url, TABLE, score]
+	_http_rank.request(url, headers, HTTPClient.METHOD_GET)
 
 
 ## スコアを送信（バリデーション付き）
@@ -104,6 +127,23 @@ func _on_get_completed(result: int, code: int, _resp_headers: PackedStringArray,
 		rankings_loaded.emit([])
 		return
 	rankings_loaded.emit(json.data if json.data is Array else [])
+
+
+func _on_rank_completed(result: int, code: int, resp_headers: PackedStringArray, _body: PackedByteArray) -> void:
+	if result != HTTPRequest.RESULT_SUCCESS or code != 200:
+		rank_loaded.emit(-1)
+		return
+	# Content-Rangeヘッダからカウントを取得: "0-0/42" or "*/42"
+	var rank: int = -1
+	for h in resp_headers:
+		if h.begins_with("content-range") or h.begins_with("Content-Range"):
+			var parts: PackedStringArray = h.split("/")
+			if parts.size() == 2:
+				var count_str: String = parts[1].strip_edges()
+				if count_str.is_valid_int():
+					rank = int(count_str) + 1
+			break
+	rank_loaded.emit(rank)
 
 
 func _on_post_completed(result: int, code: int, _headers: PackedStringArray, _body: PackedByteArray) -> void:
