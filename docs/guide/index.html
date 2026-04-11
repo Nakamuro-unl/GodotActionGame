@@ -161,6 +161,7 @@ footer {
   <li><a href="#overview">概要</a></li>
   <li><a href="#controls">操作方法</a></li>
   <li><a href="#skills">技一覧</a></li>
+  <li><a href="#knowledge">知識図鑑</a></li>
   <li><a href="#items">アイテム</a></li>
   <li><a href="#enemies">敵一覧</a></li>
   <li><a href="#gimmicks">ギミック</a></li>
@@ -421,6 +422,97 @@ footer {
       <div class="card-desc">数値を素数に変換。2なら-1x2で撃破。</div>
     </div>
   </div>
+  <div class="card">
+    <img src="../../assets/sprites/math_infinity.png" alt="極限">
+    <div class="card-body">
+      <div class="card-title">リミット <span class="tag tag-theorem">定理</span></div>
+      <div class="card-sub">効果: 毎ターン半減(value/2) / MP: 12 / 知識: 極限 (K-406)</div>
+      <div class="card-desc">敵の数値を毎ターン半減させる持続効果。大きい数値のボスを安全に削る。lim(n->inf) x/2^n = 0。</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ===== 知識図鑑 ===== -->
+<section id="knowledge">
+<h2>知識図鑑</h2>
+<p>宝箱から獲得できる数学の知識。知識には3つのカテゴリがある:</p>
+<ul style="margin:8px 0 16px">
+  <li><span class="tag tag-formula">公式</span> -- 技として装備し戦闘で使える</li>
+  <li><span class="tag tag-theorem">定理</span> -- 強力な技やフィールド効果を持つ</li>
+  <li><span class="tag tag-definition">定義</span> -- パッシブ効果やフィールド効果を持つ</li>
+</ul>
+
+<h3>ステージ1: 石器時代（自然数・加減算）-- 10知識</h3>
+<table>
+<tr><th>ID</th><th>名前</th><th>種類</th><th>装備技</th><th>フィールド効果</th><th>パッシブ</th></tr>
+<tr><td>K-101</td><td>自然数の定義</td><td><span class="tag tag-definition">定義</span></td><td>--</td><td>--</td><td>敵の数値を表示</td></tr>
+<tr><td>K-102</td><td>加法</td><td><span class="tag tag-formula">公式</span></td><td>プラス1 (+1)</td><td>加重操作</td><td>--</td></tr>
+<tr><td>K-103</td><td>減法</td><td><span class="tag tag-formula">公式</span></td><td>マイナス1 (-1)</td><td>減重操作</td><td>--</td></tr>
+<tr><td>K-104</td><td>零の発見</td><td><span class="tag tag-theorem">定理</span></td><td>--</td><td>「無」の壁を解除</td><td>--</td></tr>
+<tr><td>K-105</td><td>負の数</td><td><span class="tag tag-definition">定義</span></td><td>--</td><td>氷壁を解除</td><td>幽霊への技使用が可能に</td></tr>
+<tr><td>K-106</td><td>数直線</td><td><span class="tag tag-definition">定義</span></td><td>--</td><td>隠し通路を可視化</td><td>敵の数値を色分け表示</td></tr>
+<tr><td>K-107</td><td>繰り上がり</td><td><span class="tag tag-formula">公式</span></td><td>プラス3 (+3)</td><td>--</td><td>--</td></tr>
+<tr><td>K-108</td><td>繰り下がり</td><td><span class="tag tag-formula">公式</span></td><td>マイナス5 (-5)</td><td>--</td><td>--</td></tr>
+<tr><td>K-109</td><td>十進法</td><td><span class="tag tag-formula">公式</span></td><td>プラス10 (+10)</td><td>--</td><td>--</td></tr>
+<tr><td>K-110</td><td>補数</td><td><span class="tag tag-formula">公式</span></td><td>マイナス10 (-10)</td><td>--</td><td>--</td></tr>
+</table>
+
+<h3>ステージ2: 古代文明（乗除算・分数）-- 6知識</h3>
+<table>
+<tr><th>ID</th><th>名前</th><th>種類</th><th>装備技</th><th>フィールド効果</th><th>パッシブ</th></tr>
+<tr><td>K-201</td><td>乗法</td><td><span class="tag tag-formula">公式</span></td><td>ダブル (x2)</td><td>オブジェクト倍化</td><td>--</td></tr>
+<tr><td>K-202</td><td>除法</td><td><span class="tag tag-formula">公式</span></td><td>ハーフ (/2)</td><td>オブジェクト分割</td><td>--</td></tr>
+<tr><td>K-203</td><td>剰余</td><td><span class="tag tag-formula">公式</span></td><td>モジュロ4 (%4)</td><td>余り鍵</td><td>--</td></tr>
+<tr><td>K-204</td><td>分数の定義</td><td><span class="tag tag-definition">定義</span></td><td>--</td><td>--</td><td>分数表示が有効に</td></tr>
+<tr><td>K-205</td><td>倍数の定理</td><td><span class="tag tag-theorem">定理</span></td><td>ダブル (x2)</td><td>--</td><td>--</td></tr>
+<tr><td>K-206</td><td>約数</td><td><span class="tag tag-definition">定義</span></td><td>--</td><td>暗号扉を解読</td><td>約数を表示</td></tr>
+</table>
+
+<h3>ステージ3: 中世（方程式・幾何学）-- 8知識</h3>
+<table>
+<tr><th>ID</th><th>名前</th><th>種類</th><th>装備技</th><th>フィールド効果</th><th>パッシブ</th></tr>
+<tr><td>K-301</td><td>絶対値</td><td><span class="tag tag-formula">公式</span></td><td>アブソリュート (abs)</td><td>トラップ無効化</td><td>--</td></tr>
+<tr><td>K-302</td><td>符号反転</td><td><span class="tag tag-formula">公式</span></td><td>ネゲート (x-1)</td><td>重力反転スイッチ</td><td>--</td></tr>
+<tr><td>K-303</td><td>平方</td><td><span class="tag tag-formula">公式</span></td><td>スクエア (x^2)</td><td>石を巨大化</td><td>--</td></tr>
+<tr><td>K-304</td><td>平方根</td><td><span class="tag tag-formula">公式</span></td><td>ルート (sqrt)</td><td>障害物を縮小</td><td>--</td></tr>
+<tr><td>K-305</td><td>ピタゴラスの定理</td><td><span class="tag tag-theorem">定理</span></td><td>ルート (sqrt)</td><td>斜め移動ショートカット</td><td>--</td></tr>
+<tr><td>K-306</td><td>一次方程式</td><td><span class="tag tag-theorem">定理</span></td><td>一次関数 (範囲攻撃)</td><td>鍵付き扉を解錠</td><td>--</td></tr>
+<tr><td>K-311</td><td>二次関数</td><td><span class="tag tag-formula">公式</span></td><td>二次関数 (範囲攻撃)</td><td>--</td><td>--</td></tr>
+<tr><td>K-312</td><td>三角関数</td><td><span class="tag tag-formula">公式</span></td><td>三角関数 (範囲攻撃)</td><td>--</td><td>--</td></tr>
+</table>
+
+<h3>ステージ4: 近代（微積分・確率）-- 9知識</h3>
+<table>
+<tr><th>ID</th><th>名前</th><th>種類</th><th>装備技</th><th>フィールド効果</th><th>パッシブ</th></tr>
+<tr><td>K-313</td><td>円の方程式</td><td><span class="tag tag-formula">公式</span></td><td>円の方程式 (範囲攻撃)</td><td>--</td><td>--</td></tr>
+<tr><td>K-314</td><td>指数関数</td><td><span class="tag tag-formula">公式</span></td><td>指数関数 (範囲攻撃)</td><td>--</td><td>--</td></tr>
+<tr><td>K-401</td><td>微分</td><td><span class="tag tag-formula">公式</span></td><td>デリバティブ (桁数)</td><td>敵の速度を検知</td><td>--</td></tr>
+<tr><td>K-402</td><td>積分</td><td><span class="tag tag-formula">公式</span></td><td>インテグラル (桁合計)</td><td>断絶を接続</td><td>--</td></tr>
+<tr><td>K-403</td><td>確率</td><td><span class="tag tag-formula">公式</span></td><td>プロバビリティ (50%)</td><td>ランダム扉</td><td>--</td></tr>
+<tr><td>K-404</td><td>対数</td><td><span class="tag tag-formula">公式</span></td><td>ログ (log2)</td><td>ワープゾーン制御</td><td>--</td></tr>
+<tr><td>K-405</td><td>期待値の定理</td><td><span class="tag tag-theorem">定理</span></td><td>--</td><td>最適経路を表示</td><td>--</td></tr>
+<tr><td>K-406</td><td>極限</td><td><span class="tag tag-theorem">定理</span></td><td>リミット (毎ターン半減)</td><td>無限回廊を有限化</td><td>--</td></tr>
+<tr><td>K-407</td><td>零化写像</td><td><span class="tag tag-theorem">定理</span></td><td>ゼロ乗算 (x0, 3回限定)</td><td>--</td><td>--</td></tr>
+</table>
+
+<h3>ステージ5: 宇宙（線形代数・位相）-- 6知識</h3>
+<table>
+<tr><th>ID</th><th>名前</th><th>種類</th><th>装備技</th><th>フィールド効果</th><th>パッシブ</th></tr>
+<tr><td>K-501</td><td>ベクトル</td><td><span class="tag tag-definition">定義</span></td><td>--</td><td>--</td><td>範囲攻撃が使用可能に</td></tr>
+<tr><td>K-502</td><td>行列</td><td><span class="tag tag-formula">公式</span></td><td>ゼロベクトル (隣接全敵0化)</td><td>部屋を変形</td><td>--</td></tr>
+<tr><td>K-503</td><td>恒等写像</td><td><span class="tag tag-theorem">定理</span></td><td>アイデンティティ (n/n=1)</td><td>--</td><td>--</td></tr>
+<tr><td>K-504</td><td>ゼロベクトル</td><td><span class="tag tag-theorem">定理</span></td><td>ゼロベクトル (隣接全敵0化)</td><td>全障害物除去</td><td>--</td></tr>
+<tr><td>K-505</td><td>位相変換</td><td><span class="tag tag-formula">公式</span></td><td>トポロジー (最寄り素数)</td><td>空間歪みを解除</td><td>--</td></tr>
+<tr><td>K-506</td><td>無限の定義</td><td><span class="tag tag-definition">定義</span></td><td>--</td><td>最終扉を開放</td><td>MP消費半減</td></tr>
+</table>
+
+<div class="tip-box">
+  <strong>知識の獲得方法:</strong> ダンジョン内の宝箱を開けると、現在ステージ以下の未獲得知識をランダムに1つ獲得する。ボス撃破時にも定理を獲得できる。「技の書」アイテムでも獲得可能。
+</div>
+
+<div class="tip-box">
+  <strong>収集率とスコア:</strong> 知識収集率はリザルト画面に表示される。全39知識をコンプリートするとスコアにボーナス。知識1つにつき+300点。
 </div>
 </section>
 
@@ -530,6 +622,22 @@ footer {
     </div>
   </div>
   <div class="card">
+    <img src="../../assets/sprites/item_clairvoyance.png" alt="千里眼の水晶">
+    <div class="card-body">
+      <div class="card-title">千里眼の水晶 <span class="tag tag-uncommon">やや稀</span></div>
+      <div class="card-sub">ステージ2以降</div>
+      <div class="card-desc">フロア内の敵と宝箱の位置を全て表示。マップの欠片の上位版。</div>
+    </div>
+  </div>
+  <div class="card">
+    <img src="../../assets/sprites/item_return_wing.png" alt="帰還の翼">
+    <div class="card-body">
+      <div class="card-title">帰還の翼 <span class="tag tag-uncommon">やや稀</span></div>
+      <div class="card-sub">ステージ2以降</div>
+      <div class="card-desc">フロアの入口に瞬間移動。ピンチ時の緊急脱出に。</div>
+    </div>
+  </div>
+  <div class="card">
     <img src="../../assets/sprites/item_warp_stone.png" alt="ワープの石">
     <div class="card-body">
       <div class="card-title">ワープの石 <span class="tag tag-common">普通</span></div>
@@ -543,6 +651,14 @@ footer {
       <div class="card-title">経験の書 <span class="tag tag-uncommon">やや稀</span></div>
       <div class="card-sub">ステージ2以降</div>
       <div class="card-desc">経験値 +50。レベルアップでHP/MP全回復するのでタイミングが重要。</div>
+    </div>
+  </div>
+  <div class="card">
+    <img src="../../assets/sprites/item_skill_book.png" alt="技の書">
+    <div class="card-body">
+      <div class="card-title">技の書 <span class="tag tag-rare">稀</span></div>
+      <div class="card-sub">ステージ3以降</div>
+      <div class="card-desc">未獲得の知識を1つランダムに獲得。新しい技が増える可能性。</div>
     </div>
   </div>
   <div class="card">
